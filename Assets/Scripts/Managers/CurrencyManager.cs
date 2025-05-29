@@ -16,7 +16,7 @@ public class CurrencyManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject); // Se mantiene entre escenas
-            //monedas = PlayerPrefs.GetInt("monedas", 0);
+            monedas = PlayerPrefs.GetInt("monedas", 0);
         }
         else
         {
