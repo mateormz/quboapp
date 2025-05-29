@@ -34,10 +34,9 @@ public class PetShopController : MonoBehaviour
         }
 
         int precio = skinsData.preciosSkins[index];
-        bool comprado = CurrencyManager.Instance.RestarMonedas(precio);
-
-        if (comprado)
+        if (CurrencyManager.Instance.GetMonedas() >= precio)
         {
+            CurrencyManager.Instance.RestarMonedas(precio);
             PlayerPrefs.SetInt("skin_" + index, 1);
             PlayerPrefs.SetInt("skinSeleccionada", index);
             VerificarBotonesPorMonedas(CurrencyManager.Instance.GetMonedas());
