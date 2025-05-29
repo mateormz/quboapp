@@ -6,20 +6,21 @@ public class PetShopController : MonoBehaviour
 {
     public SkinsData skinsData;
     public TMP_Text textoMonedas;
-    public GameObject skinItemPrefab;    // Prefab para cada skin en la tienda
-    public Transform contenedorSkins;    // Contenedor (Content) del Scroll View
+    public GameObject skinItemPrefab;  // Prefab para cada skin
+    public Transform contenedorSkins;  // Content del ScrollView
 
     void Start()
     {
         textoMonedas.text = "Monedas: " + CurrencyManager.Instance.GetMonedas();
         CurrencyManager.Instance.OnMonedasActualizadas += ActualizarTextoMonedas;
 
-        // Limpiar skins antiguos si es necesario
+        // Limpiar skins anteriores
         foreach (Transform child in contenedorSkins)
         {
             Destroy(child.gameObject);
         }
 
+        // Crear dinámicamente los skins con prefab
         for (int i = 0; i < skinsData.skinsCompletas.Length; i++)
         {
             GameObject item = Instantiate(skinItemPrefab, contenedorSkins);
@@ -33,9 +34,10 @@ public class PetShopController : MonoBehaviour
             int capturedIndex = i;
             btn.onClick.AddListener(() => ComprarSkin(capturedIndex));
 
-            bool desbloqueada = PlayerPrefs.GetInt("skin_" + i, i == 0 ? 1 : 0) == 1;
-            btn.interactable = desbloqueada || CurrencyManager.Instance.GetMonedas() >= skinsData.preciosSkins[i];
+            btn.interactable = true; // Por defecto activo, se ajusta en VerificarBotonesPorMonedas
         }
+
+        VerificarBotonesPorMonedas(CurrencyManager.Instance.GetMonedas());
     }
 
     public void ComprarSkin(int index)
@@ -66,13 +68,12 @@ public class PetShopController : MonoBehaviour
 
     void VerificarBotonesPorMonedas(int monedasActuales)
     {
-        // Ahora verifica los botones dentro del contenedor dinámico
-        foreach (Transform child in contenedorSkins)
+        // Ahora se recorren los botones instanciados en el scroll
+        for (int i = 0; i < contenedorSkins.childCount; i++)
         {
-            Button btn = child.GetComponent<Button>();
-            int index = child.GetSiblingIndex();
-            bool desbloqueada = PlayerPrefs.GetInt("skin_" + index, index == 0 ? 1 : 0) == 1;
-            btn.interactable = desbloqueada || monedasActuales >= skinsData.preciosSkins[index];
+            Button btn = contenedorSkins.GetChild(i).GetComponent<Button>();
+            bool desbloqueada = PlayerPrefs.GetInt("skin_" + i, i == 0 ? 1 : 0) == 1;
+            btn.interactable = desbloqueada || monedasActuales >= skinsData.preciosSkins[i];
         }
     }
 

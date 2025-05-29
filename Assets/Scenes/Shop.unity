@@ -652,7 +652,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77ca13772dd44a447a143a6980b0bd99, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skinsData: {fileID: 11400000, guid: e339e5b2e3b7ca14bb13ca08aa5b900a, type: 2}
+  skinsData: {fileID: 11400000, guid: 7e97c2d648d065940a7b9d31dbb57033, type: 2}
   textoMonedas: {fileID: 385767924}
   skinItemPrefab: {fileID: 7767131154653031260, guid: 2f5573d793c76f3439df389a535b8306, type: 3}
   contenedorSkins: {fileID: 1364102900}
@@ -1992,3 +1992,4 @@ SceneRoots:
   - {fileID: 1087440585}
   - {fileID: 128403107}
   - {fileID: 672677158}
+  - {fileID: 1219454856}
