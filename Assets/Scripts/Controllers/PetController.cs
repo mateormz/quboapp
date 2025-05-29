@@ -2,15 +2,19 @@ using UnityEngine;
 
 public class PetController : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public SpriteRenderer petRenderer;
+    public Sprite[] skinsCompletas; // Cada sprite es una skin diferente
+
     void Start()
     {
-        
+        Debug.Log(skinsCompletas.Length);
+        int skinIndex = PlayerPrefs.GetInt("skinSeleccionada");
+        petRenderer.sprite = skinsCompletas[skinIndex];
     }
 
-    // Update is called once per frame
-    void Update()
+    public void CambiarSkin(int index)
     {
-        
+        petRenderer.sprite = skinsCompletas[index];
+        PlayerPrefs.SetInt("skinSeleccionada", index);
     }
 }
