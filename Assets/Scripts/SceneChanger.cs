@@ -20,7 +20,7 @@ public class CambiarEscena : MonoBehaviour
 
     public void IrAJuego1()
     {
-        SceneManager.LoadScene("Juego1");
+        SceneManager.LoadScene("GameJump");
     }
 
     public void IrAJuego2()
