@@ -1,6 +1,7 @@
 using System.Collections.Generic;
-using UnityEngine;
 using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [System.Serializable]
 public class Problema
@@ -9,98 +10,135 @@ public class Problema
     public string[] valoresNenufares;
 }
 
+[System.Serializable]
+public class ProblemasList
+{
+    public Problema[] problemas;
+}
+
 public class LilyManager : MonoBehaviour
 {
-    public GameObject prefabLily; // Prefab del nenúfar Lily
+    public GameObject prefabLily;
+    public TextMeshProUGUI textoEnunciado;
 
-    private Problema
-        problemaActual; // Aquí cargaremos el problema (puedes mantener la carga JSON o asignarlo manualmente)
-
+    private List<Problema> problemasDisponibles = new List<Problema>();
+    private int preguntaActualIndex = 0;
     private List<GameObject> nenufaresInstanciados = new List<GameObject>();
 
     void Start()
     {
-        CargarProblema(); // Carga o asigna problemaActual
-        CrearNenufares(); // Instancia los 3 nenúfares con orden aleatorio
+        CargarProblemas();
+        GenerarSiguientePregunta();
     }
 
-    void CargarProblema()
+    void CargarProblemas()
     {
-        // Por simplicidad solo asignamos directamente el primer problema:
-        problemaActual = new Problema
+        TextAsset jsonText = Resources.Load<TextAsset>("QuboJump/problems");
+        if (jsonText != null)
         {
-            enunciado = "Selecciona el nenúfar equivalente a 1/2",
-            valoresNenufares = new string[] { "0.5", "0.4", "0.25", "0.75" }
-        };
+            ProblemasList data = JsonUtility.FromJson<ProblemasList>(WrapArray(jsonText.text));
+            problemasDisponibles = new List<Problema>(data.problemas);
+            Shuffle(problemasDisponibles);
+        }
+        else
+        {
+            Debug.LogError("No se pudo cargar el archivo JSON.");
+        }
     }
 
-    void CrearNenufares()
+    void GenerarSiguientePregunta()
     {
-        int totalNenufares = 3;
-        float posY = 0f;
+        // Limpia los nenúfares anteriores
+        foreach (var lily in nenufaresInstanciados)
+            Destroy(lily);
+        nenufaresInstanciados.Clear();
 
-        // 1) Calcular límites en X
+        // Si ya no hay más preguntas
+        if (preguntaActualIndex >= problemasDisponibles.Count)
+        {
+            textoEnunciado.text = "¡Felicidades, completaste todas las preguntas!";
+            Debug.Log("Juego completado");
+            return;
+        }
+
+        // Toma la siguiente pregunta
+        Problema problemaActual = problemasDisponibles[preguntaActualIndex++];
+        textoEnunciado.text = problemaActual.enunciado;
+
+        // Prepara 1 correcta + 2 distractores
+        List<string> opciones = new List<string> { problemaActual.valoresNenufares[0] };
+        List<string> distractores = new List<string>(problemaActual.valoresNenufares);
+        distractores.RemoveAt(0);
+        Shuffle(distractores);
+        // Toma hasta dos distractores
+        for (int i = 0; i < Mathf.Min(2, distractores.Count); i++)
+            opciones.Add(distractores[i]);
+        Shuffle(opciones);
+
+        // Cálculo de posiciones en X
+        int totalNenufares = opciones.Count; // debería ser 3
+        float posY = 0f;
         float leftX = Camera.main.ViewportToWorldPoint(new Vector3(0, 0.5f, 0)).x;
         float rightX = Camera.main.ViewportToWorldPoint(new Vector3(1, 0.5f, 0)).x;
         float screenWidth = rightX - leftX;
-
-        // 2) Ancho de un nenúfar
         float lilyWidth = prefabLily.GetComponent<SpriteRenderer>().bounds.size.x;
-
-        // 3) Espacio (gap) total repartido en (n+1) ranuras
         float gap = (screenWidth - totalNenufares * lilyWidth) / (totalNenufares + 1);
 
-        // 4) Preparamos la lista de opciones: el correcto + 2 distractores
-        string correcto = problemaActual.valoresNenufares[0];
-        List<string> distractores = new List<string>(problemaActual.valoresNenufares);
-        distractores.RemoveAt(0); // quitamos el correcto
-        // mezclamos y tomamos los primeros 2 distractores
-        Shuffle(distractores);
-        List<string> opciones = new List<string> { correcto, distractores[0], distractores[1] };
-        // mezclamos las 3 opciones
-        Shuffle(opciones);
-
-        // 5) Instanciamos cada nenúfar en su posición
+        // Instancia cada nenúfar
         for (int i = 0; i < totalNenufares; i++)
         {
             float posX = leftX + gap + lilyWidth * 0.5f + i * (lilyWidth + gap);
-            Vector3 posicionMundo = new Vector3(posX, posY, 0f);
+            Vector3 worldPos = new Vector3(posX, posY, 0f);
 
-            GameObject lilyGO = Instantiate(prefabLily, posicionMundo, Quaternion.identity);
+            GameObject lilyGO = Instantiate(prefabLily, worldPos, Quaternion.identity);
             Lily lilyScript = lilyGO.GetComponent<Lily>();
 
-            // asignamos el TextMeshProUGUI de la instancia
-            TextMeshProUGUI texto = lilyGO.GetComponentInChildren<TextMeshProUGUI>();
-            lilyScript.textoValor = texto;
+            // Asigna el TextMeshPro de la instancia
+            lilyScript.textoValor = lilyGO.GetComponentInChildren<TextMeshProUGUI>();
+            lilyScript.manager = this;
 
-            // asignamos valor y si es correcto
+            // Asigna valor y marca correcto/incorrecto
             string valor = opciones[i];
             lilyScript.SetValor(valor);
-            lilyScript.esCorrecto = (valor == correcto);
-            lilyScript.manager = this;
+            lilyScript.esCorrecto = (valor == problemaActual.valoresNenufares[0]);
 
             nenufaresInstanciados.Add(lilyGO);
         }
     }
 
-    // método que llama Lily cuando se cliquea un nenúfar
-    public void VerificarRespuesta(bool respuestaCorrecta)
+    public void VerificarRespuesta(bool esCorrecta)
     {
-        if (respuestaCorrecta)
-            Debug.Log("Respuesta correcta!");
+        if (esCorrecta)
+        {
+            Debug.Log("¡Correcto!");
+            GenerarSiguientePregunta();
+        }
         else
-            Debug.Log("Respuesta incorrecta");
+        {
+            Debug.Log("Incorrecto. Reiniciando...");
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
     }
 
-    // Fisher–Yates shuffle
+    [System.Serializable]
+    private class Wrapper
+    {
+        public Problema[] problemas;
+    }
+
+    private string WrapArray(string json)
+    {
+        return "{\"problemas\":" + json + "}";
+    }
+
     private void Shuffle<T>(List<T> list)
     {
-        for (int i = list.Count - 1; i > 0; i--)
+        for (int i = 0; i < list.Count; i++)
         {
-            int rnd = Random.Range(0, i + 1);
-            T tmp = list[i];
+            T temp = list[i];
+            int rnd = Random.Range(i, list.Count);
             list[i] = list[rnd];
-            list[rnd] = tmp;
+            list[rnd] = temp;
         }
     }
 }
