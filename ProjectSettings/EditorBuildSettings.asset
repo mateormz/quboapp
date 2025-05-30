@@ -11,6 +11,18 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Shop.unity
     guid: 508041848ffcade49917f81a9ba1b610
+  - enabled: 1
+    path: Assets/Scenes/GameJump.unity
+    guid: 1d6b23c9d1a59e4478398e568b5fd0ae
+  - enabled: 0
+    path: Assets/Scenes/Juego2.unity
+    guid: cde0537742dd31c4c8a4d055c8152076
+  - enabled: 0
+    path: Assets/Scenes/Juego1.unity
+    guid: d5d0682d6adae01478452e24ee6d057f
+  - enabled: 1
+    path: Assets/Scenes/Games.unity
+    guid: 6c823528f91521047b18eb1b7cebdccc
   m_configObjects:
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: dd0b21d8b8efc9b4cb8cfc6ccedc9bd2, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 231188d1b493a4841b6105299486c152, type: 2}

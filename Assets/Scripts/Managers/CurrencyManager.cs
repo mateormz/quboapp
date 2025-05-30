@@ -12,16 +12,8 @@ public class CurrencyManager : MonoBehaviour
 
     void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject); // Se mantiene entre escenas
-            monedas = PlayerPrefs.GetInt("monedas", 0);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        Instance = this;
+        monedas = PlayerPrefs.GetInt("monedas", 0);
     }
 
     public void SumarMonedas(int cantidad)
@@ -31,16 +23,17 @@ public class CurrencyManager : MonoBehaviour
         OnMonedasActualizadas?.Invoke(monedas);
     }
 
-    public bool RestarMonedas(int cantidad)
+    public void RestarMonedas(int cantidad)
     {
-        if (monedas >= cantidad)
+        if (monedas < cantidad)
         {
-            monedas -= cantidad;
-            PlayerPrefs.SetInt("monedas", monedas);
-            OnMonedasActualizadas?.Invoke(monedas);
-            return true;
+            Debug.Log("No tienes suficientes monedas para realizar esta acción.");
+            return;
         }
-        return false;
+
+        monedas -= cantidad;
+        PlayerPrefs.SetInt("monedas", monedas);
+        OnMonedasActualizadas?.Invoke(monedas);
     }
 
     public int GetMonedas()

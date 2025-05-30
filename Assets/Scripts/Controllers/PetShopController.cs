@@ -5,19 +5,36 @@ using TMPro;
 public class PetShopController : MonoBehaviour
 {
     public SkinsData skinsData;
-    public Button[] botonesSkins;
     public TMP_Text textoMonedas;
+    public GameObject skinItemPrefab;  // Prefab para cada skin
+    public Transform contenedorSkins;  // Content del ScrollView
 
     void Start()
     {
         textoMonedas.text = "Monedas: " + CurrencyManager.Instance.GetMonedas();
         CurrencyManager.Instance.OnMonedasActualizadas += ActualizarTextoMonedas;
 
-        for (int i = 0; i < botonesSkins.Length; i++)
+        // Limpiar skins anteriores
+        foreach (Transform child in contenedorSkins)
         {
-            botonesSkins[i].interactable = true;
+            Destroy(child.gameObject);
+        }
+
+        // Crear dinámicamente los skins con prefab
+        for (int i = 0; i < skinsData.skinsCompletas.Length; i++)
+        {
+            GameObject item = Instantiate(skinItemPrefab, contenedorSkins);
+            Image img = item.transform.Find("SkinImage").GetComponent<Image>();
+            TMP_Text priceText = item.transform.Find("PriceText").GetComponent<TMP_Text>();
+            Button btn = item.GetComponent<Button>();
+
+            img.sprite = skinsData.skinsCompletas[i];
+            priceText.text = skinsData.preciosSkins[i] + " qu";
+
             int capturedIndex = i;
-            botonesSkins[i].onClick.AddListener(() => ComprarSkin(capturedIndex));
+            btn.onClick.AddListener(() => ComprarSkin(capturedIndex));
+
+            btn.interactable = true; // Por defecto activo, se ajusta en VerificarBotonesPorMonedas
         }
 
         VerificarBotonesPorMonedas(CurrencyManager.Instance.GetMonedas());
@@ -34,10 +51,9 @@ public class PetShopController : MonoBehaviour
         }
 
         int precio = skinsData.preciosSkins[index];
-        bool comprado = CurrencyManager.Instance.RestarMonedas(precio);
-
-        if (comprado)
+        if (CurrencyManager.Instance.GetMonedas() >= precio)
         {
+            CurrencyManager.Instance.RestarMonedas(precio);
             PlayerPrefs.SetInt("skin_" + index, 1);
             PlayerPrefs.SetInt("skinSeleccionada", index);
             VerificarBotonesPorMonedas(CurrencyManager.Instance.GetMonedas());
@@ -52,10 +68,12 @@ public class PetShopController : MonoBehaviour
 
     void VerificarBotonesPorMonedas(int monedasActuales)
     {
-        for (int i = 0; i < botonesSkins.Length; i++)
+        // Ahora se recorren los botones instanciados en el scroll
+        for (int i = 0; i < contenedorSkins.childCount; i++)
         {
+            Button btn = contenedorSkins.GetChild(i).GetComponent<Button>();
             bool desbloqueada = PlayerPrefs.GetInt("skin_" + i, i == 0 ? 1 : 0) == 1;
-            botonesSkins[i].interactable = desbloqueada || monedasActuales >= skinsData.preciosSkins[i];
+            btn.interactable = desbloqueada || monedasActuales >= skinsData.preciosSkins[i];
         }
     }
 

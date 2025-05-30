@@ -1,0 +1,154 @@
+{
+  "preguntas": [
+    {
+      "pregunta": "¿Cuánto es 9 × 7?",
+      "alternativas": ["56", "63", "72"],
+      "indiceCorrecta": 1
+    },
+    {
+      "pregunta": "Un triángulo tiene lados 5 cm, 5 cm y 6 cm. ¿Su perímetro?",
+      "alternativas": ["15", "16", "18"],
+      "indiceCorrecta": 1
+    },
+    {
+      "pregunta": "¿La raíz cuadrada de 81?",
+      "alternativas": ["9", "8", "7"],
+      "indiceCorrecta": 0
+    },
+    {
+      "pregunta": "¿Qué fracción es mayor?",
+      "alternativas": ["2/3", "3/5", "1/2"],
+      "indiceCorrecta": 0
+    },
+    {
+      "pregunta": "Si 4x = 20, ¿cuánto vale x?",
+      "alternativas": ["4", "5", "6"],
+      "indiceCorrecta": 1
+    },
+    {
+      "pregunta": "¿Cuál es 40 % de 50?",
+      "alternativas": ["15", "20", "25"],
+      "indiceCorrecta": 1
+    },
+    {
+      "pregunta": "¿Cuántos grados tiene una recta?",
+      "alternativas": ["45", "90", "180"],
+      "indiceCorrecta": 2
+    },
+    {
+      "pregunta": "¿Cuánto falta para 100 si tienes 67?",
+      "alternativas": ["23", "33", "43"],
+      "indiceCorrecta": 1
+    },
+    {
+      "pregunta": "¿Resultado de (3/4) ÷ 3?",
+      "alternativas": ["1/4", "1/3", "1/6"],
+      "indiceCorrecta": 0
+    },
+    {
+      "pregunta": "¿Número primo anterior a 20?",
+      "alternativas": ["17", "18", "19"],
+      "indiceCorrecta": 2
+    },
+    {
+    "pregunta": "¿Cuánto es 8 × 6?",
+    "alternativas": ["42", "48", "54"],
+    "indiceCorrecta": 1
+    },
+    {
+        "pregunta": "¿Cuántos lados tiene un octágono?",
+        "alternativas": ["6", "8", "10"],
+        "indiceCorrecta": 1
+    },
+    {
+        "pregunta": "¿Mitad de 42?",
+        "alternativas": ["20", "21", "22"],
+        "indiceCorrecta": 1
+    },
+    {
+        "pregunta": "¿Cuál es 15 % de 60?",
+        "alternativas": ["6", "9", "12"],
+        "indiceCorrecta": 1
+    },
+    {
+        "pregunta": "Si 5x = 35, ¿x = ?",
+        "alternativas": ["5", "6", "7"],
+        "indiceCorrecta": 2
+    },
+    {
+        "pregunta": "¿Área de un cuadrado de lado 9 cm?",
+        "alternativas": ["81 cm²", "72 cm²", "18 cm²"],
+        "indiceCorrecta": 0
+    },
+    {
+        "pregunta": "¿Cuánto es 100 – 37?",
+        "alternativas": ["63", "67", "73"],
+        "indiceCorrecta": 0
+    },
+    {
+        "pregunta": "¿Primo siguiente a 29?",
+        "alternativas": ["31", "32", "33"],
+        "indiceCorrecta": 0
+    },
+    {
+        "pregunta": "¿Valor de 3² + 4²?",
+        "alternativas": ["25", "20", "34"],
+        "indiceCorrecta": 0
+    },
+    {
+        "pregunta": "¿Tercera parte de 27?",
+        "alternativas": ["9", "8", "7"],
+        "indiceCorrecta": 0
+    },
+    {
+    "pregunta": "¿Cuánto es 11 + 9?",
+    "alternativas": ["18", "20", "22"],
+    "indiceCorrecta": 1
+    },
+    {
+        "pregunta": "¿Mitad de 64?",
+        "alternativas": ["30", "32", "36"],
+        "indiceCorrecta": 1
+    },
+    {
+        "pregunta": "¿Cuánto es 72 ÷ 9?",
+        "alternativas": ["6", "7", "8"],
+        "indiceCorrecta": 2
+    },
+    {
+        "pregunta": "¿Área de un triángulo base 10 cm y altura 4 cm?",
+        "alternativas": ["20 cm²", "24 cm²", "40 cm²"],
+        "indiceCorrecta": 0
+    },
+    {
+        "pregunta": "Si 2x + 3 = 15, ¿x = ?",
+        "alternativas": ["5", "6", "7"],
+        "indiceCorrecta": 1
+    },
+    {
+        "pregunta": "¿Cuál es 30 % de 90?",
+        "alternativas": ["27", "30", "33"],
+        "indiceCorrecta": 0
+    },
+    {
+        "pregunta": "¿Número primo más cercano a 40?",
+        "alternativas": ["37", "39", "41"],
+        "indiceCorrecta": 2
+    },
+    {
+        "pregunta": "¿Cuánto es 6³?",
+        "alternativas": ["216", "126", "96"],
+        "indiceCorrecta": 0
+    },
+    {
+        "pregunta": "¿Suma de 3/5 y 1/5?",
+        "alternativas": ["3/10", "4/5", "1/2"],
+        "indiceCorrecta": 1
+    },
+    {
+        "pregunta": "Redondea 78,6 a la decena más cercana",
+        "alternativas": ["70", "80", "90"],
+        "indiceCorrecta": 1
+    }
+  ]
+}

@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - Lily
+  - Suelo
   layers:
   - Default
   - TransparentFX
