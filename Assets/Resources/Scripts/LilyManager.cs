@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 
 [System.Serializable]
@@ -17,8 +18,12 @@ public class ProblemasList
     public Problema[] problemas;
 }
 
+
+
 public class LilyManager : MonoBehaviour
 {
+    [Header("Audio")]
+    public AudioClip musicaVictoria;
     [Header("Prefabs & UI")] public GameObject prefabLily;
     public GameObject prefabAgua;
     public GameObject prefabCesped;
@@ -41,6 +46,9 @@ public class LilyManager : MonoBehaviour
     // guardamos aquí la posición del césped final
     private Vector3 grassEndPos;
 
+    private AudioSource audioSource;
+
+
     void Start()
     {
         panelFinish.SetActive(false);
@@ -51,6 +59,8 @@ public class LilyManager : MonoBehaviour
         SpawnPlayerEnInicio();
         MostrarEnunciado(0);
         ActivarFila(0);
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
     }
 
     void CargarProblemas()
@@ -234,6 +244,12 @@ public class LilyManager : MonoBehaviour
     IEnumerator WinRoutine()
     {
         panelPregunta.SetActive(false);
+        if (musicaVictoria != null)
+        {
+            audioSource.clip = musicaVictoria;
+            audioSource.volume = 0.5f; // valor entre 0 (silencio) y 1 (máximo)
+            audioSource.Play();
+        }
         // 1) un segundo de espera antes de saltar
         yield return new WaitForSeconds(1f);
 
