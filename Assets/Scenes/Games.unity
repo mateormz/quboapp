@@ -1055,7 +1055,7 @@ GameObject:
   - component: {fileID: 1010902728}
   - component: {fileID: 1010902727}
   m_Layer: 0
-  m_Name: Music
+  m_Name: IAMMUSIC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1076,7 +1076,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 0.013
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
