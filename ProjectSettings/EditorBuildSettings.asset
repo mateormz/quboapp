@@ -12,6 +12,8 @@ EditorBuildSettings:
     path: Assets/Scenes/Shop.unity
     guid: 508041848ffcade49917f81a9ba1b610
   - enabled: 1
+    path: Assets/Scenes/GameJump.unity
+    guid: 1d6b23c9d1a59e4478398e568b5fd0ae
     path: Assets/Scenes/Games.unity
     guid: 6c823528f91521047b18eb1b7cebdccc
   - enabled: 1

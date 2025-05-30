@@ -1,0 +1,14 @@
+{
+  "preguntas": [
+    {
+      "pregunta": "¿Cuánto es 2 + 2?",
+      "alternativas": ["3", "4", "5"],
+      "indiceCorrecta": 1
+    },
+    {
+      "pregunta": "¿Cuánto es 6 / 2?",
+      "alternativas": ["2", "3", "4"],
+      "indiceCorrecta": 1
+    }
+  ]
+}
