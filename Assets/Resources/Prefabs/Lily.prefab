@@ -79,7 +79,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 1
   m_Sprite: {fileID: -7203739215597195981, guid: b3bc48cd1498dfd4e80d1a50ec92ac7a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -139,7 +139,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3bb47eed22010f44bcb9aa868ec1ae1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textoValor: {fileID: 0}
+  textoValor: {fileID: 4743209356329332280}
   esCorrecto: 0
   manager: {fileID: 0}
 --- !u!50 &-6900370210754322834
@@ -229,7 +229,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 2
   m_TargetDisplay: 0
 --- !u!114 &7884942907929075421
 MonoBehaviour:
