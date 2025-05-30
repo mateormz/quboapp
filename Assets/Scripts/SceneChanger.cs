@@ -25,6 +25,6 @@ public class CambiarEscena : MonoBehaviour
 
     public void IrAJuego2()
     {
-        SceneManager.LoadScene("Juego2");
+        SceneManager.LoadScene("QJ_1-1");
     }
 }
