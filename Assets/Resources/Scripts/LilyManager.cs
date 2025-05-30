@@ -24,6 +24,7 @@ public class LilyManager : MonoBehaviour
     public GameObject prefabCesped;
     public GameObject playerPrefab;
     public GameObject panelPerdiste; // Asignar desde el editor
+    public GameObject panelPregunta; // Asignar desde el editor
     public TextMeshProUGUI textoEnunciado;
 
     [Header("Layout")]
@@ -39,6 +40,7 @@ public class LilyManager : MonoBehaviour
     void Start()
     {
         panelPerdiste.SetActive(false);
+        panelPregunta.SetActive(true);
         CargarProblemas();
         GenerarMapaCompleto(filasCount);
         GenerarEntorno();
@@ -226,6 +228,7 @@ public class LilyManager : MonoBehaviour
                 filaActual = Mathf.Min(filaActual + 1, filasLily.Count - 1);
                 MostrarEnunciado(filaActual);
                 ActivarFila(filaActual);
+                CurrencyManager.Instance.SumarMonedas(5);
             }
             else
             {
@@ -238,6 +241,7 @@ public class LilyManager : MonoBehaviour
     public void Perder()
     {
         Time.timeScale = 0f; // Detiene el movimiento de todo
+        panelPregunta.SetActive(false);
         panelPerdiste.SetActive(true); // Muestra el panel
     }
 

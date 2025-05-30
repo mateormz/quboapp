@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -25,7 +26,15 @@ public class CambiarEscena : MonoBehaviour
 
     public void IrAJuego2()
     {
-        SceneManager.LoadScene("QJ_1-1");
-        Time.timeScale = 1f;
+        StartCoroutine(CargarJuegoConRetraso());
     }
+
+    IEnumerator CargarJuegoConRetraso()
+    {
+        yield return new WaitForSecondsRealtime(0.1f); // <- Esto ignora Time.timeScale
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("QJ_1-1");
+    }
+
+
 }
