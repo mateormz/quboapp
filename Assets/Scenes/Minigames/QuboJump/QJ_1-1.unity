@@ -492,12 +492,12 @@ GameObject:
   - component: {fileID: 685253439}
   - component: {fileID: 685253438}
   m_Layer: 5
-  m_Name: PanelLose
+  m_Name: PanelFinish
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &685253438
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615,7 +615,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: PERDISTE!
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ff76023c9af2f9f469911fe447618402, type: 2}
   m_sharedMaterial: {fileID: -2951573836657292315, guid: ff76023c9af2f9f469911fe447618402, type: 2}
@@ -1182,12 +1182,12 @@ GameObject:
   - component: {fileID: 1767066695}
   - component: {fileID: 1767066694}
   m_Layer: 5
-  m_Name: PanelLose
+  m_Name: PanelPregunta
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1767066693
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1279,9 +1279,11 @@ MonoBehaviour:
   prefabAgua: {fileID: 6662577243282346275, guid: 5774763e3c9e24c4e8d84816ea360117, type: 3}
   prefabCesped: {fileID: 3537900345364150595, guid: 48b8b1c4e9189af4191c5a407737ccd9, type: 3}
   playerPrefab: {fileID: 1753939015}
-  panelPerdiste: {fileID: 685253437}
+  panelPregunta: {fileID: 1767066692}
+  panelFinish: {fileID: 685253437}
+  textoFinal: {fileID: 827197499}
   textoEnunciado: {fileID: 1993100201}
-  filasCount: 6
+  filasCount: 3
   espacioVertical: 2
 --- !u!4 &1796780119
 Transform:

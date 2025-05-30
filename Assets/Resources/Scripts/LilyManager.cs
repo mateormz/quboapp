@@ -18,17 +18,17 @@ public class ProblemasList
 
 public class LilyManager : MonoBehaviour
 {
-    [Header("Prefabs & UI")]
-    public GameObject prefabLily;
+    [Header("Prefabs & UI")] public GameObject prefabLily;
     public GameObject prefabAgua;
     public GameObject prefabCesped;
     public GameObject playerPrefab;
-    public GameObject panelPerdiste; // Asignar desde el editor
     public GameObject panelPregunta; // Asignar desde el editor
+    [Header("UI")] public GameObject panelFinish; // Ahora este reemplaza al panelPerdiste
+    public TextMeshProUGUI textoFinal; // El texto dentro del panelFinish
+
     public TextMeshProUGUI textoEnunciado;
 
-    [Header("Layout")]
-    public int filasCount = 5;       // Cuántas filas generar
+    [Header("Layout")] public int filasCount = 5; // Cuántas filas generar
     public float espacioVertical = 5f; // Separación vertical entre filas
 
     private List<Problema> problemasDisponibles = new List<Problema>();
@@ -39,7 +39,7 @@ public class LilyManager : MonoBehaviour
 
     void Start()
     {
-        panelPerdiste.SetActive(false);
+        panelFinish.SetActive(false); // en lugar de panelPerdiste
         panelPregunta.SetActive(true);
         CargarProblemas();
         GenerarMapaCompleto(filasCount);
@@ -48,6 +48,7 @@ public class LilyManager : MonoBehaviour
         MostrarEnunciado(0);
         ActivarFila(0);
     }
+
 
     void CargarProblemas()
     {
@@ -105,6 +106,7 @@ public class LilyManager : MonoBehaviour
 
                 fila.Add(script);
             }
+
             filasLily.Add(fila);
         }
     }
@@ -163,9 +165,7 @@ public class LilyManager : MonoBehaviour
         var cf = Camera.main.GetComponent<CameraFollow>();
         if (cf != null)
             cf.SetStopFollow(grassEnd.transform, grassH);
-
     }
-
 
 
     void SpawnPlayerEnInicio()
@@ -212,48 +212,84 @@ public class LilyManager : MonoBehaviour
 
     public void OnLilyClicked(Lily lily)
     {
+        // sólo respondemos si este nenúfar pertenece a la filaActual
+        if (filaActual < 0 || filaActual >= filasLily.Count ||
+            !filasLily[filaActual].Contains(lily))
+            return;
+
+        // desactivar todos los colliders mientras el jugador salta
         foreach (var fila in filasLily)
-            foreach (var l in fila)
-                l.GetComponent<Collider2D>().enabled = false;
+        foreach (var l in fila)
+            l.GetComponent<Collider2D>().enabled = false;
 
         playerMovement.MoveTo(lily.transform.position, () =>
         {
-            if (lily.esCorrecto)
-            {
-                var current = filasLily[filaActual];
-                foreach (var l in current)
-                    if (l != lily) Destroy(l.gameObject);
-                filasLily[filaActual] = new List<Lily> { lily };
-
-                filaActual = Mathf.Min(filaActual + 1, filasLily.Count - 1);
-                MostrarEnunciado(filaActual);
-                ActivarFila(filaActual);
-                CurrencyManager.Instance.SumarMonedas(5);
-            }
-            else
+            if (!lily.esCorrecto)
             {
                 Destroy(lily.gameObject);
                 Perder();
-}
+                return;
+            }
+
+            // respuesta correcta: destruye los demás nenúfares de esta fila
+            var current = filasLily[filaActual];
+            foreach (var l in current)
+                if (l != lily)
+                    Destroy(l.gameObject);
+            filasLily[filaActual] = new List<Lily> { lily };
+
+            // ¿era la última fila?
+            bool wasLast = filaActual == filasLily.Count - 1;
+
+            // avanza el índice (aunque no hará nada si era la última)
+            filaActual++;
+
+            CurrencyManager.Instance.SumarMonedas(5);
+
+            if (wasLast)
+            {
+                Ganar();
+            }
+            else
+            {
+                MostrarEnunciado(filaActual);
+                ActivarFila(filaActual);
+            }
         });
     }
 
+
     public void Perder()
     {
-        Time.timeScale = 0f; // Detiene el movimiento de todo
+        Time.timeScale = 0f; // Detiene todo
         panelPregunta.SetActive(false);
-        panelPerdiste.SetActive(true); // Muestra el panel
+        textoFinal.text = "PERDISTE!";
+        panelFinish.SetActive(true); // Muestra el panel final
     }
+
+    public void Ganar()
+    {
+        Time.timeScale = 0f;
+        CurrencyManager.Instance.SumarMonedas(50);
+        panelPregunta.SetActive(false);
+        textoFinal.text = "GANASTE!";
+        panelFinish.SetActive(true);
+    }
+
 
     public void VolverAlMenu()
     {
         Time.timeScale = 1f; // Reanudar tiempo antes de cambiar de escena
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-
     }
 
     // Helpers
-    [System.Serializable] class Wrapper { public Problema[] problemas; }
+    [System.Serializable]
+    class Wrapper
+    {
+        public Problema[] problemas;
+    }
+
     string WrapArray(string j) => "{\"problemas\":" + j + "}";
 
     void Shuffle<T>(List<T> list)
@@ -266,6 +302,4 @@ public class LilyManager : MonoBehaviour
             list[r] = tmp;
         }
     }
-
-
 }
