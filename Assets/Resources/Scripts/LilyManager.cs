@@ -111,33 +111,27 @@ public class LilyManager : MonoBehaviour
     void GenerarEntorno()
     {
         var cam = Camera.main;
-        // 1) Límites X y suelo real (ViewportToWorldPoint)
         float leftX = cam.ViewportToWorldPoint(new Vector3(0, .5f, 0)).x;
         float rightX = cam.ViewportToWorldPoint(new Vector3(1, .5f, 0)).x;
         float centerX = (leftX + rightX) / 2f;
         float width = rightX - leftX;
-
-        // Usa Viewport para obtener el verdadero bottomY de la pantalla
         float bottomY = cam.ViewportToWorldPoint(new Vector3(0, 0, 0)).y;
 
-        float grassH = 1.5f;
-        float scale = 0.1f;
+        const float grassH = 1.5f;
+        const float scale = 0.1f;
 
-        // 2) Césped inicial [bottomY .. bottomY+1.5]
+        // 1) Césped inicial [bottomY .. bottomY+1.5]
         var grassStart = Instantiate(prefabCesped,
             new Vector3(centerX, bottomY + grassH / 2f, 0f),
             Quaternion.identity);
         var srG1 = grassStart.GetComponent<SpriteRenderer>();
         srG1.drawMode = SpriteDrawMode.Tiled;
-        // Al estar escalado 0.1, ponemos size = (worldSize / scale)
         srG1.size = new Vector2(width / scale, grassH / scale);
         grassStart.transform.localScale = Vector3.one * scale;
 
-        // 3) Calcula alturas de nenúfares para saber altura del agua
-        float firstLilyY = bottomY + 2.5f;  // tu offset para primer lily
+        // 2) Agua [bottomY+1.5 .. lastLilyY+0.5]
+        float firstLilyY = bottomY + 2f;
         float lastLilyY = firstLilyY + (generatedRowsCount - 1) * espacioVertical;
-
-        // 4) Agua [bottomY+1.5 .. lastLilyY+0.5]
         float waterBot = bottomY + grassH;
         float waterTop = lastLilyY + 0.5f;
         float waterH = waterTop - waterBot;
@@ -150,7 +144,7 @@ public class LilyManager : MonoBehaviour
         srA.size = new Vector2(width / scale, waterH / scale);
         agua.transform.localScale = Vector3.one * scale;
 
-        // 5) Césped final [waterTop .. waterTop+1.5]
+        // 3) Césped final [waterTop .. waterTop+1.5]
         var grassEnd = Instantiate(prefabCesped,
             new Vector3(centerX, waterTop + grassH / 2f, 0f),
             Quaternion.identity);
@@ -158,7 +152,16 @@ public class LilyManager : MonoBehaviour
         srG2.drawMode = SpriteDrawMode.Tiled;
         srG2.size = new Vector2(width / scale, grassH / scale);
         grassEnd.transform.localScale = Vector3.one * scale;
+
+        // ——— Ajuste de cámara: que deje de seguir y se fije para mostrar todo grassEnd ———
+
+        // Al final de GenerarEntorno()
+        var cf = Camera.main.GetComponent<CameraFollow>();
+        if (cf != null)
+            cf.SetStopFollow(grassEnd.transform, grassH);
+
     }
+
 
 
     void SpawnPlayerEnInicio()
