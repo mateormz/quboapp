@@ -133,7 +133,7 @@ public class LilyManager : MonoBehaviour
         float firstLilyY = bottomY + 2f;
         float lastLilyY = firstLilyY + (generatedRowsCount - 1) * espacioVertical;
         float waterBot = bottomY + grassH;
-        float waterTop = lastLilyY + 0.5f;
+        float waterTop = lastLilyY + 1.5f;
         float waterH = waterTop - waterBot;
 
         var agua = Instantiate(prefabAgua,
