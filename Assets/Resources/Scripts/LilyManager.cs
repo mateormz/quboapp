@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -22,14 +23,14 @@ public class LilyManager : MonoBehaviour
     public GameObject prefabAgua;
     public GameObject prefabCesped;
     public GameObject playerPrefab;
-    public GameObject panelPregunta; // Asignar desde el editor
-    [Header("UI")] public GameObject panelFinish; // Ahora este reemplaza al panelPerdiste
-    public TextMeshProUGUI textoFinal; // El texto dentro del panelFinish
+    public GameObject panelPregunta;
+    [Header("UI")] public GameObject panelFinish;
+    public TextMeshProUGUI textoFinal;
 
     public TextMeshProUGUI textoEnunciado;
 
-    [Header("Layout")] public int filasCount = 5; // Cuántas filas generar
-    public float espacioVertical = 5f; // Separación vertical entre filas
+    [Header("Layout")] public int filasCount = 5;
+    public float espacioVertical = 5f;
 
     private List<Problema> problemasDisponibles = new List<Problema>();
     private List<List<Lily>> filasLily = new List<List<Lily>>();
@@ -37,9 +38,12 @@ public class LilyManager : MonoBehaviour
     private int generatedRowsCount = 0;
     private PlayerMovement playerMovement;
 
+    // guardamos aquí la posición del césped final
+    private Vector3 grassEndPos;
+
     void Start()
     {
-        panelFinish.SetActive(false); // en lugar de panelPerdiste
+        panelFinish.SetActive(false);
         panelPregunta.SetActive(true);
         CargarProblemas();
         GenerarMapaCompleto(filasCount);
@@ -48,7 +52,6 @@ public class LilyManager : MonoBehaviour
         MostrarEnunciado(0);
         ActivarFila(0);
     }
-
 
     void CargarProblemas()
     {
@@ -62,48 +65,36 @@ public class LilyManager : MonoBehaviour
         else Debug.LogError("No se pudo cargar el JSON de problemas.");
     }
 
-    /// <summary>
-    /// Genera todas las filas de nenúfares comenzando siempre 2f sobre el fondo.
-    /// </summary>
     void GenerarMapaCompleto(int filasCount)
     {
         int max = Mathf.Min(filasCount, problemasDisponibles.Count);
         generatedRowsCount = max;
 
-        // límites horizontales
         var cam = Camera.main;
         float leftX = cam.ViewportToWorldPoint(new Vector3(0, .5f, 0)).x;
         float rightX = cam.ViewportToWorldPoint(new Vector3(1, .5f, 0)).x;
         float screenWidth = rightX - leftX;
         float lilyW = prefabLily.GetComponent<SpriteRenderer>().bounds.size.x;
-
-        // borde inferior del mundo
         float bottomY = cam.ViewportToWorldPoint(new Vector3(0, 0, 0)).y;
-        // altura de la primera fila de nenúfares: bottomY + 2f
         float firstLilyY = bottomY + 2.5f;
 
         for (int f = 0; f < max; f++)
         {
             float posY = firstLilyY + f * espacioVertical;
-            Problema prob = problemasDisponibles[f];
-
-            // slots = 3 (1 correcta + 2 distractores)
+            var prob = problemasDisponibles[f];
             int totalSlots = Mathf.Min(3, prob.valoresNenufares.Length);
             float gap = (screenWidth - totalSlots * lilyW) / (totalSlots + 1);
-
             var fila = new List<Lily>();
+
             for (int i = 0; i < totalSlots; i++)
             {
                 float posX = leftX + gap + lilyW * .5f + i * (lilyW + gap);
-                GameObject go = Instantiate(prefabLily, new Vector3(posX, posY, 0f), Quaternion.identity);
+                var go = Instantiate(prefabLily, new Vector3(posX, posY, 0f), Quaternion.identity);
                 var script = go.GetComponent<Lily>();
                 script.manager = this;
                 script.textoValor = go.GetComponentInChildren<TextMeshProUGUI>();
-
-                // inicialmente vacío
                 script.SetValor("");
                 script.esCorrecto = false;
-
                 fila.Add(script);
             }
 
@@ -111,9 +102,6 @@ public class LilyManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Genera el césped inicial, el agua y el césped final según el mapa.
-    /// </summary>
     void GenerarEntorno()
     {
         var cam = Camera.main;
@@ -126,7 +114,7 @@ public class LilyManager : MonoBehaviour
         const float grassH = 1.5f;
         const float scale = 0.1f;
 
-        // 1) Césped inicial [bottomY .. bottomY+1.5]
+        // césped inicio
         var grassStart = Instantiate(prefabCesped,
             new Vector3(centerX, bottomY + grassH / 2f, 0f),
             Quaternion.identity);
@@ -135,7 +123,7 @@ public class LilyManager : MonoBehaviour
         srG1.size = new Vector2(width / scale, grassH / scale);
         grassStart.transform.localScale = Vector3.one * scale;
 
-        // 2) Agua [bottomY+1.5 .. lastLilyY+0.5]
+        // agua entre nenúfares
         float firstLilyY = bottomY + 2f;
         float lastLilyY = firstLilyY + (generatedRowsCount - 1) * espacioVertical;
         float waterBot = bottomY + grassH;
@@ -150,7 +138,7 @@ public class LilyManager : MonoBehaviour
         srA.size = new Vector2(width / scale, waterH / scale);
         agua.transform.localScale = Vector3.one * scale;
 
-        // 3) Césped final [waterTop .. waterTop+1.5]
+        // césped final (meta)
         var grassEnd = Instantiate(prefabCesped,
             new Vector3(centerX, waterTop + grassH / 2f, 0f),
             Quaternion.identity);
@@ -159,28 +147,24 @@ public class LilyManager : MonoBehaviour
         srG2.size = new Vector2(width / scale, grassH / scale);
         grassEnd.transform.localScale = Vector3.one * scale;
 
-        // ——— Ajuste de cámara: que deje de seguir y se fije para mostrar todo grassEnd ———
+        // guardamos su posición para el “win routine”
+        grassEndPos = grassEnd.transform.position;
 
-        // Al final de GenerarEntorno()
-        var cf = Camera.main.GetComponent<CameraFollow>();
-        if (cf != null)
-            cf.SetStopFollow(grassEnd.transform, grassH);
+        // ajustar cámara para mostrar todo, si usas StopFollow:
+        var cf = cam.GetComponent<CameraFollow>();
+        if (cf != null) cf.SetStopFollow(grassEnd.transform, grassH);
     }
-
 
     void SpawnPlayerEnInicio()
     {
         var cam = Camera.main;
         float bottomY = cam.ViewportToWorldPoint(new Vector3(0, 0, 0)).y;
-        // jugador en X=0, Y mitad césped inicial
         float spawnY = bottomY + (1.5f / 2f);
         var playerGO = Instantiate(playerPrefab, new Vector3(0f, spawnY, 0f), Quaternion.identity);
         playerGO.transform.localScale = Vector3.one * 0.2f;
         playerMovement = playerGO.GetComponent<PlayerMovement>();
-
-        var camFollow = Camera.main.GetComponent<CameraFollow>();
-        if (camFollow != null)
-            camFollow.SetTarget(playerGO.transform);
+        var cf = cam.GetComponent<CameraFollow>();
+        if (cf != null) cf.SetTarget(playerGO.transform);
     }
 
     void MostrarEnunciado(int f)
@@ -193,7 +177,6 @@ public class LilyManager : MonoBehaviour
     {
         if (f < 0 || f >= filasLily.Count) return;
         var prob = problemasDisponibles[f];
-
         var opciones = new List<string> { prob.valoresNenufares[0] };
         var distract = new List<string>(prob.valoresNenufares);
         distract.RemoveAt(0);
@@ -212,12 +195,9 @@ public class LilyManager : MonoBehaviour
 
     public void OnLilyClicked(Lily lily)
     {
-        // sólo respondemos si este nenúfar pertenece a la filaActual
         if (filaActual < 0 || filaActual >= filasLily.Count ||
-            !filasLily[filaActual].Contains(lily))
-            return;
+            !filasLily[filaActual].Contains(lily)) return;
 
-        // desactivar todos los colliders mientras el jugador salta
         foreach (var fila in filasLily)
         foreach (var l in fila)
             l.GetComponent<Collider2D>().enabled = false;
@@ -231,25 +211,18 @@ public class LilyManager : MonoBehaviour
                 return;
             }
 
-            // respuesta correcta: destruye los demás nenúfares de esta fila
             var current = filasLily[filaActual];
             foreach (var l in current)
                 if (l != lily)
                     Destroy(l.gameObject);
             filasLily[filaActual] = new List<Lily> { lily };
 
-            // ¿era la última fila?
             bool wasLast = filaActual == filasLily.Count - 1;
-
-            // avanza el índice (aunque no hará nada si era la última)
             filaActual++;
-
             CurrencyManager.Instance.SumarMonedas(5);
 
             if (wasLast)
-            {
-                Ganar();
-            }
+                StartCoroutine(WinRoutine());
             else
             {
                 MostrarEnunciado(filaActual);
@@ -258,13 +231,53 @@ public class LilyManager : MonoBehaviour
         });
     }
 
+    IEnumerator WinRoutine()
+    {
+        panelPregunta.SetActive(false);
+        // 1) un segundo de espera antes de saltar
+        yield return new WaitForSeconds(1f);
+
+        // 2) salto al centro del césped final
+        playerMovement.MoveTo(grassEndPos, null);
+        yield return new WaitForSeconds(playerMovement.jumpDuration);
+
+        // 3) baile: 4 pasos, cada paso 0.5s, desplazando ±0.5u y rotando 360°
+        Vector3 start = grassEndPos;
+        int steps = 4;
+        float stepDur = 0.5f;
+        for (int i = 0; i < steps; i++)
+        {
+            float dir = (i % 2 == 0) ? 1f : -1f;
+            Vector3 targetPos = start + Vector3.right * 0.5f * dir;
+            float elapsed = 0f;
+            Quaternion startRot = playerMovement.transform.rotation;
+            while (elapsed < stepDur)
+            {
+                float t = elapsed / stepDur;
+                playerMovement.transform.position = Vector3.Lerp(start, targetPos, t);
+                playerMovement.transform.rotation = Quaternion.Euler(0, 0, Mathf.Lerp(0, 360f * dir, t));
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            // fijar al final del paso
+            playerMovement.transform.position = targetPos;
+            start = targetPos;
+        }
+
+        // 4) finalmente, el player queda de cabeza (rotación 180°)
+        playerMovement.transform.rotation = Quaternion.Euler(0, 0, 180f);
+
+        // 5) mostramos el panel de “ganaste”
+        Ganar();
+    }
 
     public void Perder()
     {
-        Time.timeScale = 0f; // Detiene todo
+        Time.timeScale = 0f;
         panelPregunta.SetActive(false);
         textoFinal.text = "PERDISTE!";
-        panelFinish.SetActive(true); // Muestra el panel final
+        panelFinish.SetActive(true);
     }
 
     public void Ganar()
@@ -276,10 +289,9 @@ public class LilyManager : MonoBehaviour
         panelFinish.SetActive(true);
     }
 
-
     public void VolverAlMenu()
     {
-        Time.timeScale = 1f; // Reanudar tiempo antes de cambiar de escena
+        Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
