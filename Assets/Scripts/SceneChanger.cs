@@ -12,4 +12,19 @@ public class CambiarEscena : MonoBehaviour
     {
         SceneManager.LoadScene("Main");
     }
+    
+    public void IrAGames()
+    {
+        SceneManager.LoadScene("Games");
+    }
+
+    public void IrAJuego1()
+    {
+        SceneManager.LoadScene("Juego1");
+    }
+
+    public void IrAJuego2()
+    {
+        SceneManager.LoadScene("Juego2");
+    }
 }
