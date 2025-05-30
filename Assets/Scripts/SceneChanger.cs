@@ -26,5 +26,6 @@ public class CambiarEscena : MonoBehaviour
     public void IrAJuego2()
     {
         SceneManager.LoadScene("QJ_1-1");
+        Time.timeScale = 1f;
     }
 }

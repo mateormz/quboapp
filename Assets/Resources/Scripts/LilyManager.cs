@@ -23,6 +23,7 @@ public class LilyManager : MonoBehaviour
     public GameObject prefabAgua;
     public GameObject prefabCesped;
     public GameObject playerPrefab;
+    public GameObject panelPerdiste; // Asignar desde el editor
     public TextMeshProUGUI textoEnunciado;
 
     [Header("Layout")]
@@ -37,6 +38,7 @@ public class LilyManager : MonoBehaviour
 
     void Start()
     {
+        panelPerdiste.SetActive(false);
         CargarProblemas();
         GenerarMapaCompleto(filasCount);
         GenerarEntorno();
@@ -228,9 +230,22 @@ public class LilyManager : MonoBehaviour
             else
             {
                 Destroy(lily.gameObject);
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-            }
+                Perder();
+}
         });
+    }
+
+    public void Perder()
+    {
+        Time.timeScale = 0f; // Detiene el movimiento de todo
+        panelPerdiste.SetActive(true); // Muestra el panel
+    }
+
+    public void VolverAlMenu()
+    {
+        Time.timeScale = 1f; // Reanudar tiempo antes de cambiar de escena
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
     }
 
     // Helpers
@@ -247,4 +262,6 @@ public class LilyManager : MonoBehaviour
             list[r] = tmp;
         }
     }
+
+
 }
