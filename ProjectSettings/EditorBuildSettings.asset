@@ -21,6 +21,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Juego1.unity
     guid: d5d0682d6adae01478452e24ee6d057f
   - enabled: 1
+    path: Assets/Scenes/Minigames/QuboJump/QJ_1-1.unity
+    guid: 85a005cb2a8129a4fae3e86b8aa536fa
+  - enabled: 1
     path: Assets/Scenes/Games.unity
     guid: 6c823528f91521047b18eb1b7cebdccc
   m_configObjects:
