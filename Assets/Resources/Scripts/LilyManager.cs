@@ -19,11 +19,9 @@ public class ProblemasList
 }
 
 
-
 public class LilyManager : MonoBehaviour
 {
-    [Header("Audio")]
-    public AudioClip musicaVictoria;
+    [Header("Audio")] public AudioClip musicaVictoria;
     [Header("Prefabs & UI")] public GameObject prefabLily;
     public GameObject prefabAgua;
     public GameObject prefabCesped;
@@ -148,21 +146,22 @@ public class LilyManager : MonoBehaviour
         srA.size = new Vector2(width / scale, waterH / scale);
         agua.transform.localScale = Vector3.one * scale;
 
-        // césped final (meta)
+        // 3) Césped final (meta) – ahora triple de alto [waterTop .. waterTop + 1.5 * 3]
+        float finalGrassH = grassH * 3f;
         var grassEnd = Instantiate(prefabCesped,
-            new Vector3(centerX, waterTop + grassH / 2f, 0f),
+            new Vector3(centerX, waterTop + finalGrassH / 2f, 0f),
             Quaternion.identity);
         var srG2 = grassEnd.GetComponent<SpriteRenderer>();
         srG2.drawMode = SpriteDrawMode.Tiled;
-        srG2.size = new Vector2(width / scale, grassH / scale);
+        srG2.size = new Vector2(width / scale, finalGrassH / scale);
         grassEnd.transform.localScale = Vector3.one * scale;
 
         // guardamos su posición para el “win routine”
         grassEndPos = grassEnd.transform.position;
 
-        // ajustar cámara para mostrar todo, si usas StopFollow:
+        // ajuste de cámara si necesitas fijarla al final
         var cf = cam.GetComponent<CameraFollow>();
-        if (cf != null) cf.SetStopFollow(grassEnd.transform, grassH);
+        if (cf != null) cf.SetStopFollow(grassEnd.transform, finalGrassH);
     }
 
     void SpawnPlayerEnInicio()
@@ -247,9 +246,10 @@ public class LilyManager : MonoBehaviour
         if (musicaVictoria != null)
         {
             audioSource.clip = musicaVictoria;
-            audioSource.volume = 0.5f; // valor entre 0 (silencio) y 1 (máximo)
+            audioSource.volume = 0.3f; // valor entre 0 (silencio) y 1 (máximo)
             audioSource.Play();
         }
+
         // 1) un segundo de espera antes de saltar
         yield return new WaitForSeconds(1f);
 

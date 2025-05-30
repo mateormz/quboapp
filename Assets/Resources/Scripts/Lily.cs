@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 public class Lily : MonoBehaviour, IPointerClickHandler
 {
-    public TextMeshProUGUI textoValor;   // referencia al texto
+    public TextMeshProUGUI textoValor; // referencia al texto
     [HideInInspector] public bool esCorrecto;
     [HideInInspector] public LilyManager manager;
 

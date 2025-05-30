@@ -154,7 +154,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -314.07413, y: 630}
+  m_AnchoredPosition: {x: -316, y: 599}
   m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &361934254
@@ -555,7 +555,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -55}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 115.48291, y: -641.6394}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &827197497
@@ -1205,7 +1205,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 427}
+  m_AnchoredPosition: {x: 0, y: 249}
   m_SizeDelta: {x: 125.581, y: -1026.15}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1767066694
@@ -1284,7 +1284,7 @@ MonoBehaviour:
   panelFinish: {fileID: 685253437}
   textoFinal: {fileID: 827197499}
   textoEnunciado: {fileID: 1993100201}
-  filasCount: 8
+  filasCount: 3
   espacioVertical: 2
 --- !u!4 &1796780119
 Transform:
