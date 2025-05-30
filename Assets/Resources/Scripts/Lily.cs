@@ -4,21 +4,20 @@ using UnityEngine.EventSystems;
 
 public class Lily : MonoBehaviour, IPointerClickHandler
 {
-    public TextMeshProUGUI textoValor; // referencia al texto que muestra el valor
-    public bool esCorrecto;            // marca si este nenúfar es la respuesta
+    public TextMeshProUGUI textoValor;   // referencia al texto
+    [HideInInspector] public bool esCorrecto;
     [HideInInspector] public LilyManager manager;
 
-    // Asigna el texto
     public void SetValor(string nuevoValor)
     {
         if (textoValor != null)
             textoValor.text = nuevoValor;
     }
 
-    // Este método se llama cuando el objeto es clickeado o tocado
+    // Este método ahora llama al manager pasándole esta instancia
     public void OnPointerClick(PointerEventData eventData)
     {
         if (manager != null)
-            manager.VerificarRespuesta(esCorrecto);
+            manager.OnLilyClicked(this);
     }
 }

@@ -18,8 +18,12 @@ public class ProblemasList
 
 public class LilyManager : MonoBehaviour
 {
-    public GameObject prefabLily;
+    [Header("Prefabs & UI")] public GameObject prefabLily;
     public TextMeshProUGUI textoEnunciado;
+    public PlayerMovement playerMovement;
+
+    [Header("Layout")] public float alturaBase = 0f; // Altura de la primera fila
+    public float espacioVertical = 2f; // Espacio entre filas
 
     private List<Problema> problemasDisponibles = new List<Problema>();
     private int preguntaActualIndex = 0;
@@ -36,89 +40,107 @@ public class LilyManager : MonoBehaviour
         TextAsset jsonText = Resources.Load<TextAsset>("QuboJump/problems");
         if (jsonText != null)
         {
-            ProblemasList data = JsonUtility.FromJson<ProblemasList>(WrapArray(jsonText.text));
+            var data = JsonUtility.FromJson<ProblemasList>(WrapArray(jsonText.text));
             problemasDisponibles = new List<Problema>(data.problemas);
             Shuffle(problemasDisponibles);
         }
         else
         {
-            Debug.LogError("No se pudo cargar el archivo JSON.");
+            Debug.LogError("No se pudo cargar el JSON de preguntas.");
         }
     }
 
     void GenerarSiguientePregunta()
     {
-        // Limpia los nenúfares anteriores
-        foreach (var lily in nenufaresInstanciados)
-            Destroy(lily);
-        nenufaresInstanciados.Clear();
-
-        // Si ya no hay más preguntas
+        // Si ya no hay más preguntas, mostramos final
         if (preguntaActualIndex >= problemasDisponibles.Count)
         {
-            textoEnunciado.text = "¡Felicidades, completaste todas las preguntas!";
-            Debug.Log("Juego completado");
+            textoEnunciado.text = "¡Has completado todas las preguntas!";
             return;
         }
 
-        // Toma la siguiente pregunta
-        Problema problemaActual = problemasDisponibles[preguntaActualIndex++];
-        textoEnunciado.text = problemaActual.enunciado;
+        // Tomamos la siguiente pregunta
+        var prob = problemasDisponibles[preguntaActualIndex++];
+        textoEnunciado.text = prob.enunciado;
 
-        // Prepara 1 correcta + 2 distractores
-        List<string> opciones = new List<string> { problemaActual.valoresNenufares[0] };
-        List<string> distractores = new List<string>(problemaActual.valoresNenufares);
-        distractores.RemoveAt(0);
-        Shuffle(distractores);
-        // Toma hasta dos distractores
-        for (int i = 0; i < Mathf.Min(2, distractores.Count); i++)
-            opciones.Add(distractores[i]);
+        // Construimos las opciones: 1 correcta + 2 distractores
+        var opciones = new List<string> { prob.valoresNenufares[0] };
+        var distract = new List<string>(prob.valoresNenufares);
+        distract.RemoveAt(0);
+        Shuffle(distract);
+        for (int i = 0; i < Mathf.Min(2, distract.Count); i++)
+            opciones.Add(distract[i]);
         Shuffle(opciones);
 
-        // Cálculo de posiciones en X
-        int totalNenufares = opciones.Count; // debería ser 3
-        float posY = 0f;
-        float leftX = Camera.main.ViewportToWorldPoint(new Vector3(0, 0.5f, 0)).x;
-        float rightX = Camera.main.ViewportToWorldPoint(new Vector3(1, 0.5f, 0)).x;
+        // Cálculo de posiciones X para tantas lilys como opciones (aquí 3)
+        int total = opciones.Count;
+        float leftX = Camera.main.ViewportToWorldPoint(new Vector3(0, .5f, 0)).x;
+        float rightX = Camera.main.ViewportToWorldPoint(new Vector3(1, .5f, 0)).x;
         float screenWidth = rightX - leftX;
-        float lilyWidth = prefabLily.GetComponent<SpriteRenderer>().bounds.size.x;
-        float gap = (screenWidth - totalNenufares * lilyWidth) / (totalNenufares + 1);
+        float lilyW = prefabLily.GetComponent<SpriteRenderer>().bounds.size.x;
+        float gap = (screenWidth - total * lilyW) / (total + 1);
 
-        // Instancia cada nenúfar
-        for (int i = 0; i < totalNenufares; i++)
+        // Altura de esta fila:
+        float posY = alturaBase + (preguntaActualIndex - 1) * espacioVertical;
+
+        // Instanciamos cada nenúfar
+        for (int i = 0; i < total; i++)
         {
-            float posX = leftX + gap + lilyWidth * 0.5f + i * (lilyWidth + gap);
-            Vector3 worldPos = new Vector3(posX, posY, 0f);
+            float posX = leftX + gap + lilyW * .5f + i * (lilyW + gap);
+            var go = Instantiate(prefabLily, new Vector3(posX, posY, 0f), Quaternion.identity);
+            var script = go.GetComponent<Lily>();
 
-            GameObject lilyGO = Instantiate(prefabLily, worldPos, Quaternion.identity);
-            Lily lilyScript = lilyGO.GetComponent<Lily>();
+            // Configuramos el Lily
+            script.manager = this;
+            script.textoValor = go.GetComponentInChildren<TextMeshProUGUI>();
+            script.SetValor(opciones[i]);
+            script.esCorrecto = (opciones[i] == prob.valoresNenufares[0]);
 
-            // Asigna el TextMeshPro de la instancia
-            lilyScript.textoValor = lilyGO.GetComponentInChildren<TextMeshProUGUI>();
-            lilyScript.manager = this;
-
-            // Asigna valor y marca correcto/incorrecto
-            string valor = opciones[i];
-            lilyScript.SetValor(valor);
-            lilyScript.esCorrecto = (valor == problemaActual.valoresNenufares[0]);
-
-            nenufaresInstanciados.Add(lilyGO);
+            nenufaresInstanciados.Add(go);
         }
     }
 
-    public void VerificarRespuesta(bool esCorrecta)
+    /// <summary>
+    /// Llamado por Lily cuando se hace click.
+    /// </summary>
+    public void OnLilyClicked(Lily lily)
     {
-        if (esCorrecta)
-        {
-            Debug.Log("¡Correcto!");
-            GenerarSiguientePregunta();
-        }
-        else
-        {
-            Debug.Log("Incorrecto. Reiniciando...");
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }
+        // Desactivamos todos los colliders para evitar clicks múltiples
+        foreach (var l in nenufaresInstanciados)
+            l.GetComponent<Collider2D>().enabled = false;
+
+        // Saltamos a la posición del nenúfar clickeado
+        playerMovement.MoveTo(
+            lily.transform.position,
+            () =>
+            {
+                if (lily.esCorrecto)
+                {
+                    // Destruir solo los nenúfares incorrectos
+                    foreach (var l in nenufaresInstanciados)
+                    {
+                        if (l != lily.gameObject)
+                            Destroy(l);
+                    }
+
+                    // Limpiamos la lista y la reemplazamos con el nenúfar donde estamos
+                    nenufaresInstanciados.Clear();
+                    nenufaresInstanciados.Add(lily.gameObject);
+
+                    // Generamos la siguiente fila de preguntas
+                    GenerarSiguientePregunta();
+                }
+                else
+                {
+                    // En caso de error, destuir este nenúfar y reiniciar
+                    Destroy(lily.gameObject);
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                }
+            }
+        );
     }
+
+    // ----------------- Helpers -----------------
 
     [System.Serializable]
     private class Wrapper
@@ -126,19 +148,16 @@ public class LilyManager : MonoBehaviour
         public Problema[] problemas;
     }
 
-    private string WrapArray(string json)
-    {
-        return "{\"problemas\":" + json + "}";
-    }
+    private string WrapArray(string j) => "{\"problemas\":" + j + "}";
 
     private void Shuffle<T>(List<T> list)
     {
         for (int i = 0; i < list.Count; i++)
         {
-            T temp = list[i];
-            int rnd = Random.Range(i, list.Count);
-            list[i] = list[rnd];
-            list[rnd] = temp;
+            var tmp = list[i];
+            int r = Random.Range(i, list.Count);
+            list[i] = list[r];
+            list[r] = tmp;
         }
     }
 }
