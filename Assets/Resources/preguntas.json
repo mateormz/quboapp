@@ -113,7 +113,7 @@
     {
         "pregunta": "¿Cuánto es 72 ÷ 9?",
         "alternativas": ["6", "7", "8"],
-        "indiceCorrecta": 0
+        "indiceCorrecta": 2
     },
     {
         "pregunta": "¿Área de un triángulo base 10 cm y altura 4 cm?",
@@ -123,7 +123,7 @@
     {
         "pregunta": "Si 2x + 3 = 15, ¿x = ?",
         "alternativas": ["5", "6", "7"],
-        "indiceCorrecta": 0
+        "indiceCorrecta": 1
     },
     {
         "pregunta": "¿Cuál es 30 % de 90?",
