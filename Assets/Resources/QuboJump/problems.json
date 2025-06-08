@@ -1,0 +1,186 @@
+[
+  {
+    "enunciado": "Selecciona el equivalente a 2/3",
+    "valoresNenufares": ["0.666", "0.67", "0.6", "0.75"]
+  },
+  {
+    "enunciado": "Selecciona el equivalente a 4/5",
+    "valoresNenufares": ["0.8", "0.75", "0.85", "0.9"]
+  },
+  {
+    "enunciado": "Selecciona el equivalente a 7/10",
+    "valoresNenufares": ["0.7", "0.08", "0.75", "0.65"]
+  },
+  {
+    "enunciado": "Selecciona el equivalente a 5/8",
+    "valoresNenufares": ["0.625", "0.65", "0.6", "0.75"]
+  },
+  {
+    "enunciado": "Selecciona el equivalente a 3/10",
+    "valoresNenufares": ["0.3", "0.03", "0.33", "0.35"]
+  },
+  {
+    "enunciado": "Selecciona el equivalente a 25%",
+    "valoresNenufares": ["1/4", "1/3", "1/5", "1/2"]
+  },
+  {
+    "enunciado": "Selecciona el equivalente a 0.2",
+    "valoresNenufares": ["1/5", "1/4", "1/6", "2/5"]
+  },
+  {
+    "enunciado": "Selecciona el equivalente a 60%",
+    "valoresNenufares": ["3/5", "2/3", "1/2", "4/5"]
+  },
+  {
+    "enunciado": "Selecciona el equivalente a 0.75",
+    "valoresNenufares": ["3/4", "2/5", "1/3", "4/5"]
+  },
+  {
+    "enunciado": "Selecciona el equivalente a 80%",
+    "valoresNenufares": ["4/5", "3/4", "2/3", "5/6"]
+  },
+  {
+    "enunciado": "¿Cual es el resultado de 15 − 7 + 3?",
+    "valoresNenufares": ["11", "5", "21", "7"]
+  },
+  {
+    "enunciado": "¿Cual es el resultado de (4 × 6) ÷ 3?",
+    "valoresNenufares": ["8", "2", "6", "10"]
+  },
+  {
+    "enunciado": "¿Cual es el resultado de −5 + (−8)?",
+    "valoresNenufares": ["−13", "3", "13", "5"]
+  },
+  {
+    "enunciado": "¿Cual es el resultado de 12 × (−2)?",
+    "valoresNenufares": ["−24", "24", "−14", "14"]
+  },
+  {
+    "enunciado": "Si un libro cuesta S/.80 y tiene un 10% de descuento, ¿cual es su precio final?",
+    "valoresNenufares": ["S/.72", "S/.70", "S/.78", "S/.74"]
+  },
+  {
+    "enunciado": "Si un celular de S/.500 recibe dos descuentos sucesivos de 10% y 20%, ¿cual es el precio final?",
+    "valoresNenufares": ["S/.360", "S/.400", "S/.350", "S/.380"]
+  },
+  {
+    "enunciado": "Convierte 2500 g a kilogramos",
+    "valoresNenufares": ["2.5 kg", "0.25 kg", "25 kg", "0.025 kg"]
+  },
+  {
+    "enunciado": "Convierte 3.5 h a minutos",
+    "valoresNenufares": ["210 min", "205 min", "180 min", "200 min"]
+  },
+  {
+    "enunciado": "Convierte 300 K a grados Celsius (C = K−273)",
+    "valoresNenufares": ["27 °C", "300 °C", "573 °C", "−27 °C"]
+  },
+  {
+    "enunciado": "¿Cual es 10²?",
+    "valoresNenufares": ["100", "20", "10", "1000"]
+  },
+  {
+    "enunciado": "¿Cual es 10³?",
+    "valoresNenufares": ["1000", "300", "100", "10"]
+  },
+  {
+    "enunciado": "¿Cual es 10⁴?",
+    "valoresNenufares": ["10000", "1000", "1000 0", "100"]
+  },
+  {
+    "enunciado": "Escribe en forma numerica: 'tres mil quinientos veinte'",
+    "valoresNenufares": ["3520", "3250", "3502", "5320"]
+  },
+  {
+    "enunciado": "Escribe en forma numerica: 'catorce mil ochocientos'",
+    "valoresNenufares": ["14800", "18400", "14080", "1480"]
+  },
+  {
+    "enunciado": "Plantea la expresion numerica: 'la suma de 12 y 7, multiplicada por 3'",
+    "valoresNenufares": ["(12+7)×3", "12+ (7×3)", "12×7+3", "12+7×3"]
+  },
+  {
+    "enunciado": "Plantea la expresion numerica: '5 menos el doble de 4'",
+    "valoresNenufares": ["5−(2×4)", "(5−2)×4", "5−2×4", "2×(5−4)"]
+  },
+  {
+    "enunciado": "¿Cual es el equivalente a 1 500 m en kilometros?",
+    "valoresNenufares": ["1.5 km", "15 km", "0.15 km", "150 km"]
+  },
+  {
+    "enunciado": "¿Cuantos segundos hay en 2.5 min?",
+    "valoresNenufares": ["150 s", "200 s", "120 s", "100 s"]
+  },
+  {
+    "enunciado": "Si aplicas un descuento del 15% a S/.200, ¿cuanto pagas?",
+    "valoresNenufares": ["S/.170", "S/.165", "S/.175", "S/.180"]
+  },
+  {
+    "enunciado": "¿Cual es el 30% de 60?",
+    "valoresNenufares": ["18", "20", "15", "12"]
+  },
+  {
+    "enunciado": "Ordena de menor a mayor: 0.2, 2/5, 20%",
+    "valoresNenufares": ["0.2, 2/5, 20%", "20%, 0.2, 2/5", "2/5, 20%, 0.2", "0.2, 20%, 2/5"]
+  },
+  {
+    "enunciado": "¿Cual es mayor: 3/7 o 0.42?",
+    "valoresNenufares": ["3/7", "0.42", "Son iguales", "No se puede comparar"]
+  },
+  {
+    "enunciado": "Convierte 3/25 en decimal",
+    "valoresNenufares": ["0.12", "0.125", "0.08", "0.2"]
+  },
+  {
+    "enunciado": "Convierte 0.875 en fraccion",
+    "valoresNenufares": ["7/8", "3/4", "5/6", "8/7"]
+  },
+  {
+    "enunciado": "Completa: 8³ = ",
+    "valoresNenufares": ["512", "64", "256", "1024"]
+  },
+  {
+    "enunciado": "Resuelve: 0.4 + 0.35",
+    "valoresNenufares": ["0.75", "0.7", "0.85", "0.65"]
+  },
+  {
+    "enunciado": "Resuelve: 1.2 − 0.75",
+    "valoresNenufares": ["0.45", "0.4", "0.35", "0.5"]
+  },
+  {
+    "enunciado": "¿Cual es el doble de 4/9?",
+    "valoresNenufares": ["8/9", "4/9", "2/9", "1/9"]
+  },
+  {
+    "enunciado": "¿Cual es la mitad de 0.14?",
+    "valoresNenufares": ["0.07", "0.14", "0.0175", "0.035"]
+  },
+  {
+    "enunciado": "Convierte 250 °C a Kelvin (K = °C + 273)",
+    "valoresNenufares": ["523 K", "527 K", "453 K", "720 K"]
+  },
+  {
+    "enunciado": "¿Cuantos gramos hay en 0.03 kg?",
+    "valoresNenufares": ["30 g", "300 g", "3 g", "3000 g"]
+  },
+  {
+    "enunciado": "Un terreno mide 2 ha. ¿Cuantos m² son?",
+    "valoresNenufares": ["20000 m²", "2000 m²", "200 m²", "200000 m²"]
+  },
+  {
+    "enunciado": "¿Que numero ocupa el lugar de las centenas en 5 438?",
+    "valoresNenufares": ["4", "5", "3", "8"]
+  },
+  {
+    "enunciado": "¿Que numero ocupa el lugar de los decimos en 12.7?",
+    "valoresNenufares": ["7", "2", "1", "0"]
+  },
+  {
+    "enunciado": "Convierte 0.045 en notacion cientifica",
+    "valoresNenufares": ["4.5×10⁻²", "4.5×10⁻³", "45×10⁻³", "0.45×10⁻¹"]
+  },
+  {
+    "enunciado": "Convierte 6.2×10³ a forma decimal",
+    "valoresNenufares": ["6200", "6.2", "0.0062", "62"]
+  }
+]

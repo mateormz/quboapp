@@ -3,18 +3,11 @@ using UnityEngine;
 public class PetController : MonoBehaviour
 {
     public SpriteRenderer petRenderer;
-    public Sprite[] skinsCompletas; // Cada sprite es una skin diferente
+    public SkinsData skinsData;
 
     void Start()
     {
-        Debug.Log(skinsCompletas.Length);
-        int skinIndex = PlayerPrefs.GetInt("skinSeleccionada");
-        petRenderer.sprite = skinsCompletas[skinIndex];
-    }
-
-    public void CambiarSkin(int index)
-    {
-        petRenderer.sprite = skinsCompletas[index];
-        PlayerPrefs.SetInt("skinSeleccionada", index);
+        int skinIndex = PlayerPrefs.GetInt("skinSeleccionada", 0);
+        petRenderer.sprite = skinsData.skinsCompletas[skinIndex];
     }
 }

@@ -4,60 +4,60 @@ using TMPro;
 
 public class PetShopController : MonoBehaviour
 {
-    public SpriteRenderer petRenderer;
-    public Sprite[] skinsCompletas;           // Skins de la mascota
-    public int[] preciosSkins;                // Precios de cada skin
-    public Button[] botonesSkins;             // Botones para cada skin
-    public TMP_Text textoMonedas;             // Texto con TMP para mostrar monedas
+    public SkinsData skinsData;
+    public TMP_Text textoMonedas;
+    public GameObject skinItemPrefab;  // Prefab para cada skin
+    public Transform contenedorSkins;  // Content del ScrollView
 
     void Start()
     {
-        // Mostrar monedas actuales
         textoMonedas.text = "Monedas: " + CurrencyManager.Instance.GetMonedas();
         CurrencyManager.Instance.OnMonedasActualizadas += ActualizarTextoMonedas;
 
-        // Configurar botones
-        for (int i = 0; i < botonesSkins.Length; i++)
+        // Limpiar skins anteriores
+        foreach (Transform child in contenedorSkins)
         {
-            botonesSkins[i].interactable = true;
-
-            // Capturar el índice en el listener
-            int capturedIndex = i;
-            botonesSkins[i].onClick.AddListener(() => ComprarSkin(capturedIndex));
+            Destroy(child.gameObject);
         }
 
-        // Verificar estado inicial de los botones
+        // Crear dinámicamente los skins con prefab
+        for (int i = 0; i < skinsData.skinsCompletas.Length; i++)
+        {
+            GameObject item = Instantiate(skinItemPrefab, contenedorSkins);
+            Image img = item.transform.Find("SkinImage").GetComponent<Image>();
+            TMP_Text priceText = item.transform.Find("PriceText").GetComponent<TMP_Text>();
+            Button btn = item.GetComponent<Button>();
+
+            img.sprite = skinsData.skinsCompletas[i];
+            priceText.text = skinsData.preciosSkins[i] + " qu";
+
+            int capturedIndex = i;
+            btn.onClick.AddListener(() => ComprarSkin(capturedIndex));
+
+            btn.interactable = true; // Por defecto activo, se ajusta en VerificarBotonesPorMonedas
+        }
+
         VerificarBotonesPorMonedas(CurrencyManager.Instance.GetMonedas());
     }
 
     public void ComprarSkin(int index)
     {
-        // Verifica si ya está desbloqueada
-        if (PlayerPrefs.GetInt("skin_" + index, index == 0 ? 1 : 0) == 1)
+        bool desbloqueada = PlayerPrefs.GetInt("skin_" + index, index == 0 ? 1 : 0) == 1;
+
+        if (desbloqueada)
         {
-            CambiarSkin(index);
+            PlayerPrefs.SetInt("skinSeleccionada", index);
             return;
         }
 
-        int precio = preciosSkins[index];
-        bool comprado = CurrencyManager.Instance.RestarMonedas(precio);
-
-        if (comprado)
+        int precio = skinsData.preciosSkins[index];
+        if (CurrencyManager.Instance.GetMonedas() >= precio)
         {
+            CurrencyManager.Instance.RestarMonedas(precio);
             PlayerPrefs.SetInt("skin_" + index, 1);
-            CambiarSkin(index);
+            PlayerPrefs.SetInt("skinSeleccionada", index);
             VerificarBotonesPorMonedas(CurrencyManager.Instance.GetMonedas());
         }
-        else
-        {
-            Debug.Log("No tienes suficientes monedas para esta skin.");
-        }
-    }
-
-    public void CambiarSkin(int index)
-    {
-        petRenderer.sprite = skinsCompletas[index];
-        PlayerPrefs.SetInt("skinSeleccionada", index);
     }
 
     void ActualizarTextoMonedas(int nuevaCantidad)
@@ -68,26 +68,18 @@ public class PetShopController : MonoBehaviour
 
     void VerificarBotonesPorMonedas(int monedasActuales)
     {
-        for (int i = 0; i < botonesSkins.Length; i++)
+        // Ahora se recorren los botones instanciados en el scroll
+        for (int i = 0; i < contenedorSkins.childCount; i++)
         {
+            Button btn = contenedorSkins.GetChild(i).GetComponent<Button>();
             bool desbloqueada = PlayerPrefs.GetInt("skin_" + i, i == 0 ? 1 : 0) == 1;
-
-            if (desbloqueada)
-            {
-                botonesSkins[i].interactable = true;
-            }
-            else
-            {
-                botonesSkins[i].interactable = monedasActuales >= preciosSkins[i];
-            }
+            btn.interactable = desbloqueada || monedasActuales >= skinsData.preciosSkins[i];
         }
     }
 
     void OnDestroy()
     {
         if (CurrencyManager.Instance != null)
-        {
             CurrencyManager.Instance.OnMonedasActualizadas -= ActualizarTextoMonedas;
-        }
     }
 }
