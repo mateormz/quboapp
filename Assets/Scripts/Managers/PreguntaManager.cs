@@ -20,7 +20,7 @@ public class PreguntaManager : MonoBehaviour
     public AlternativaController[] zonasAlternativas;
     public GameObject panelPerdiste;
     public GameObject panelCargando;
-    public GameObject panelVictoria; // NUEVO
+    public GameObject panelVictoria;
 
     private PreguntaData[] preguntas;
     private int indiceActual = 0;
@@ -28,18 +28,22 @@ public class PreguntaManager : MonoBehaviour
 
     private string gameId = "a3d59a39-c738-450f-8f56-af0bd0ef4302";
     private int level = 1;
-    private string token = "8e5655dc-ef5b-4810-bb30-93d2d65b12a1";
+    private string token;
 
     void Start()
     {
         Time.timeScale = 1f;
+
+        // Recuperar token de PlayerPrefs
+        token = PlayerPrefs.GetString("token");
+
         if (panelCargando != null) panelCargando.SetActive(true);
         StartCoroutine(CargarPreguntasDesdeAPI());
     }
 
     IEnumerator CargarPreguntasDesdeAPI()
     {
-        string levelUrl = $"https://0mztjazn7i.execute-api.us-east-1.amazonaws.com/dev/games/{gameId}/levels/{level}";
+        string levelUrl = ApiConfig.GetLevel(gameId, level);
         UnityWebRequest www = UnityWebRequest.Get(levelUrl);
         www.SetRequestHeader("Authorization", token);
         yield return www.SendWebRequest();
@@ -55,7 +59,7 @@ public class PreguntaManager : MonoBehaviour
 
         foreach (string qid in levelData.questions)
         {
-            string questionUrl = $"https://0mztjazn7i.execute-api.us-east-1.amazonaws.com/dev/games/questions/{qid}";
+            string questionUrl = ApiConfig.GetQuestion(qid);
             UnityWebRequest qRequest = UnityWebRequest.Get(questionUrl);
             qRequest.SetRequestHeader("Authorization", token);
             yield return qRequest.SendWebRequest();
@@ -122,7 +126,7 @@ public class PreguntaManager : MonoBehaviour
     {
         if (panelCargando != null) panelCargando.SetActive(true);
 
-        string url = $"https://0mztjazn7i.execute-api.us-east-1.amazonaws.com/dev/games/{gameId}/levels/{level}/submit";
+        string url = ApiConfig.SubmitLevel(gameId, level);
         string json = JsonUtility.ToJson(submitData);
 
         UnityWebRequest req = new UnityWebRequest(url, "POST");
