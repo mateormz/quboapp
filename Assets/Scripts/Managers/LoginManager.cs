@@ -12,8 +12,6 @@ public class LoginManager : MonoBehaviour
     public Button loginButton;
     public TMP_Text mensajeErrorText;
 
-    private string loginUrl = "https://bdvhnjkzea.execute-api.us-east-1.amazonaws.com/dev/auth/login";
-
     void Start()
     {
         loginButton.onClick.AddListener(OnLoginClicked);
@@ -46,7 +44,7 @@ public class LoginManager : MonoBehaviour
 
         string json = JsonUtility.ToJson(loginData);
 
-        using (UnityWebRequest request = new UnityWebRequest(loginUrl, "POST"))
+        using (UnityWebRequest request = new UnityWebRequest(ApiConfig.LOGIN_URL, "POST"))
         {
             byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(json);
             request.uploadHandler = new UploadHandlerRaw(jsonToSend);
