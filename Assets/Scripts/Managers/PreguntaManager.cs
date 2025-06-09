@@ -27,19 +27,25 @@ public class PreguntaManager : MonoBehaviour
     private SubmitWrapper submitData = new SubmitWrapper();
 
     private string gameId = "a3d59a39-c738-450f-8f56-af0bd0ef4302";
-    private int level = 1;
+    private int level;
     private string token;
 
     void Start()
     {
         Time.timeScale = 1f;
 
-        // Recuperar token de PlayerPrefs
         token = PlayerPrefs.GetString("token");
+        level = PlayerPrefs.GetInt("nivel_seleccionado", 1); // ← carga el nivel que guardaste
 
-        if (panelCargando != null) panelCargando.SetActive(true);
+        Debug.Log("🔢 Nivel seleccionado para jugar: " + level);
+
+        if (panelCargando != null)
+            panelCargando.SetActive(true);
+
         StartCoroutine(CargarPreguntasDesdeAPI());
     }
+
+
 
     IEnumerator CargarPreguntasDesdeAPI()
     {
