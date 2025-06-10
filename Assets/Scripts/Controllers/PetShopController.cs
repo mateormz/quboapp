@@ -1,85 +1,259 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Networking;
+using System.Collections;
+using System.Collections.Generic;
 
 public class PetShopController : MonoBehaviour
 {
-    public SkinsData skinsData;
     public TMP_Text textoMonedas;
-    public GameObject skinItemPrefab;  // Prefab para cada skin
-    public Transform contenedorSkins;  // Content del ScrollView
+    public GameObject skinItemPrefab;
+    public Transform contenedorSkins;
+
+    private List<Skin> skinsDisponibles = new();
+    private List<string> skinsDesbloqueadas = new();
+    private string skinSeleccionada;
 
     void Start()
     {
-        textoMonedas.text = "Monedas: " + CurrencyManager.Instance.GetMonedas();
-        CurrencyManager.Instance.OnMonedasActualizadas += ActualizarTextoMonedas;
-
-        // Limpiar skins anteriores
-        foreach (Transform child in contenedorSkins)
-        {
-            Destroy(child.gameObject);
-        }
-
-        // Crear dinámicamente los skins con prefab
-        for (int i = 0; i < skinsData.skinsCompletas.Length; i++)
-        {
-            GameObject item = Instantiate(skinItemPrefab, contenedorSkins);
-            Image img = item.transform.Find("SkinImage").GetComponent<Image>();
-            TMP_Text priceText = item.transform.Find("PriceText").GetComponent<TMP_Text>();
-            Button btn = item.GetComponent<Button>();
-
-            img.sprite = skinsData.skinsCompletas[i];
-            priceText.text = skinsData.preciosSkins[i] + " qu";
-
-            int capturedIndex = i;
-            btn.onClick.AddListener(() => ComprarSkin(capturedIndex));
-
-            btn.interactable = true; // Por defecto activo, se ajusta en VerificarBotonesPorMonedas
-        }
-
-        VerificarBotonesPorMonedas(CurrencyManager.Instance.GetMonedas());
+        textoMonedas.text = "Cargando monedas...";
+        StartCoroutine(CargarSkinsDesdeAPI());
     }
 
-    public void ComprarSkin(int index)
+    IEnumerator CargarSkinsDesdeAPI()
     {
-        bool desbloqueada = PlayerPrefs.GetInt("skin_" + index, index == 0 ? 1 : 0) == 1;
+        string user_id = PlayerPrefs.GetString("user_id");
+        string token = PlayerPrefs.GetString("token");
 
-        if (desbloqueada)
+        // GET - Obtener skins del backend
+        using (UnityWebRequest request = UnityWebRequest.Get(ApiConfig.GET_SKINS_URL))
         {
-            PlayerPrefs.SetInt("skinSeleccionada", index);
-            return;
+            request.SetRequestHeader("Authorization", token);
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                SkinsResponse response = JsonUtility.FromJson<SkinsResponse>("{\"skins\":" + request.downloadHandler.text + "}");
+                skinsDisponibles = new List<Skin>(response.skins);
+
+                skinsDisponibles.Sort((a, b) =>
+                {
+                    int numA = ExtraerNumero(a.skin_id);
+                    int numB = ExtraerNumero(b.skin_id);
+                    return numA.CompareTo(numB);
+                });
+            }
+            else
+            {
+                Debug.LogError("Error obteniendo skins: " + request.downloadHandler.text);
+                yield break;
+            }
         }
 
-        int precio = skinsData.preciosSkins[index];
-        if (CurrencyManager.Instance.GetMonedas() >= precio)
+        // GET - Obtener datos del usuario (skins desbloqueadas y monedas)
+        using (UnityWebRequest userRequest = UnityWebRequest.Get(ApiConfig.GET_USER_SKINS_URL(user_id)))
         {
-            CurrencyManager.Instance.RestarMonedas(precio);
-            PlayerPrefs.SetInt("skin_" + index, 1);
-            PlayerPrefs.SetInt("skinSeleccionada", index);
-            VerificarBotonesPorMonedas(CurrencyManager.Instance.GetMonedas());
+            userRequest.SetRequestHeader("Authorization", token);
+            yield return userRequest.SendWebRequest();
+
+            if (userRequest.result == UnityWebRequest.Result.Success)
+            {
+                UserSkinsResponse userData = JsonUtility.FromJson<UserSkinsResponse>(userRequest.downloadHandler.text);
+                skinsDesbloqueadas = new List<string>(userData.skins_unlocked);
+                skinSeleccionada = userData.skin_selected;
+                CurrencyManager.Instance.SetMonedas(userData.qu_coin);
+                textoMonedas.text = "Monedas: " + userData.qu_coin;
+            }
+            else
+            {
+                Debug.LogError("Error obteniendo skins del usuario: " + userRequest.downloadHandler.text);
+                yield break;
+            }
+        }
+
+        GenerarUI();
+    }
+
+    void GenerarUI()
+    {
+        foreach (Transform child in contenedorSkins)
+            Destroy(child.gameObject);
+
+        foreach (Skin skin in skinsDisponibles)
+        {
+            GameObject item = Instantiate(skinItemPrefab, contenedorSkins);
+            TMP_Text priceText = item.transform.Find("PriceText").GetComponent<TMP_Text>();
+            Button btn = item.GetComponent<Button>();
+            Image img = item.transform.Find("SkinImage").GetComponent<Image>();
+
+            StartCoroutine(CargarImagenDesdeURL(skin.image_url, img));
+
+            bool desbloqueada = skinsDesbloqueadas.Contains(skin.skin_id);
+
+            if (desbloqueada)
+            {
+                // Mostrar "equipado" o "equipar"
+                if (skin.skin_id == skinSeleccionada)
+                {
+                    priceText.text = "Equipado";
+                    btn.interactable = false;  // No se puede volver a equipar
+                }
+                else
+                {
+                    priceText.text = "Equipar";
+                    btn.interactable = true;
+                }
+            }
+            else
+            {
+                // Mostrar el precio si no está desbloqueada
+                priceText.text = skin.price + " qu";
+                btn.interactable = CurrencyManager.Instance.GetMonedas() >= skin.price;
+            }
+
+            string idSkin = skin.skin_id;
+            btn.onClick.AddListener(() => ComprarSkin(idSkin, skin.price, desbloqueada));
+        }
+    }
+
+    void ComprarSkin(string skinId, int precio, bool yaDesbloqueada)
+    {
+        string user_id = PlayerPrefs.GetString("user_id");
+        string token = PlayerPrefs.GetString("token");
+
+        if (yaDesbloqueada)
+        {
+            StartCoroutine(SeleccionarSkin(skinId, user_id, token));
+        }
+        else if (CurrencyManager.Instance.GetMonedas() >= precio)
+        {
+            StartCoroutine(DesbloquearSkin(skinId, precio, user_id, token));
+        }
+    }
+
+    // POST - Actualizar skin seleccionada
+    IEnumerator SeleccionarSkin(string skinId, string user_id, string token)
+    {
+        string url = ApiConfig.UPDATE_SKIN_SELECTED(user_id);
+        var data = JsonUtility.ToJson(new SkinSeleccionada { skin_selected = skinId });
+
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(data);
+            request.uploadHandler = new UploadHandlerRaw(jsonToSend);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Authorization", token);
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log("Skin seleccionada: " + skinId);
+                skinSeleccionada = skinId;            // ✅ Actualizar localmente
+                GenerarUI();                          // ✅ Refrescar UI sin recargar todo
+            }
+            else
+            {
+                Debug.LogError("Error al seleccionar skin: " + request.downloadHandler.text);
+            }
+        }
+    }
+
+    // POST - Desbloquear skin
+    IEnumerator DesbloquearSkin(string skinId, int precio, string user_id, string token)
+    {
+        string url = ApiConfig.UNLOCK_SKIN(user_id);
+        var data = JsonUtility.ToJson(new SkinDesbloqueo { skin_to_unlock = skinId });
+
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(data);
+            request.uploadHandler = new UploadHandlerRaw(jsonToSend);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Authorization", token);
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                CurrencyManager.Instance.RestarMonedas(precio);
+                skinsDesbloqueadas.Add(skinId);       // ✅ Actualizar localmente
+                Debug.Log("Skin desbloqueada: " + skinId);
+                GenerarUI();                          // ✅ Refrescar UI sin recargar todo
+            }
+            else
+            {
+                Debug.LogError("Error al desbloquear skin: " + request.downloadHandler.text);
+            }
+        }
+    }
+
+    IEnumerator CargarImagenDesdeURL(string url, Image img)
+    {
+        using (UnityWebRequest request = UnityWebRequestTexture.GetTexture(url))
+        {
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                Texture2D tex = DownloadHandlerTexture.GetContent(request);
+                img.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            }
         }
     }
 
     void ActualizarTextoMonedas(int nuevaCantidad)
     {
         textoMonedas.text = "Monedas: " + nuevaCantidad;
-        VerificarBotonesPorMonedas(nuevaCantidad);
-    }
-
-    void VerificarBotonesPorMonedas(int monedasActuales)
-    {
-        // Ahora se recorren los botones instanciados en el scroll
-        for (int i = 0; i < contenedorSkins.childCount; i++)
-        {
-            Button btn = contenedorSkins.GetChild(i).GetComponent<Button>();
-            bool desbloqueada = PlayerPrefs.GetInt("skin_" + i, i == 0 ? 1 : 0) == 1;
-            btn.interactable = desbloqueada || monedasActuales >= skinsData.preciosSkins[i];
-        }
     }
 
     void OnDestroy()
     {
         if (CurrencyManager.Instance != null)
             CurrencyManager.Instance.OnMonedasActualizadas -= ActualizarTextoMonedas;
+    }
+
+    [System.Serializable]
+    public class Skin
+    {
+        public string skin_id;
+        public string name;
+        public int price;
+        public string image_url;
+    }
+
+    [System.Serializable]
+    public class SkinsResponse
+    {
+        public Skin[] skins;
+    }
+
+    [System.Serializable]
+    public class UserSkinsResponse
+    {
+        public string skin_selected;
+        public string[] skins_unlocked;
+        public int qu_coin;
+    }
+
+    [System.Serializable]
+    public class SkinSeleccionada
+    {
+        public string skin_selected;
+    }
+
+    [System.Serializable]
+    public class SkinDesbloqueo
+    {
+        public string skin_to_unlock;
+    }
+
+    int ExtraerNumero(string id)
+    {
+        string numeroStr = System.Text.RegularExpressions.Regex.Match(id, @"\d+").Value;
+        return int.TryParse(numeroStr, out int numero) ? numero : int.MaxValue;
     }
 }

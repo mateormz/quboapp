@@ -16,6 +16,13 @@ public class CurrencyManager : MonoBehaviour
         monedas = PlayerPrefs.GetInt("monedas", 0);
     }
 
+    public void SetMonedas(int cantidad)
+    {
+        monedas = cantidad;
+        PlayerPrefs.SetInt("monedas", monedas);
+        OnMonedasActualizadas?.Invoke(monedas);
+    }
+
     public void SumarMonedas(int cantidad)
     {
         monedas += cantidad;
