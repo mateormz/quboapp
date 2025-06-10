@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
 using Data;
 using System.Linq;
-
+using System;
 
 [System.Serializable]
 public class Problema
@@ -14,8 +14,8 @@ public class Problema
     public string enunciado;
     public string[] valoresNenufares;
     public int correctIndex;
+    public string questionId;
 }
-
 
 public class LilyManager : MonoBehaviour
 {
@@ -28,7 +28,6 @@ public class LilyManager : MonoBehaviour
     public GameObject panelFinish;
     public TextMeshProUGUI textoFinal;
     public TextMeshProUGUI textoEnunciado;
-
     public int filasCount = 5;
     public float espacioVertical = 5f;
 
@@ -44,10 +43,21 @@ public class LilyManager : MonoBehaviour
 
     public AudioClip musicaVictoria;
 
+    // Datos para el submit
+    private SubmitWrapper submitData = new SubmitWrapper();
+    private string gameId;
+    private int level;
+    private string token;
+
     void Start()
     {
         panelFinish.SetActive(false);
         panelPregunta.SetActive(true);
+
+        token = PlayerPrefs.GetString("token");
+        level = PlayerPrefs.GetInt("nivel_seleccionado", 1);
+        gameId = PlayerPrefs.GetString("selected_game_id");
+
         StartCoroutine(CargarPreguntasDesdeAPI());
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
@@ -55,10 +65,6 @@ public class LilyManager : MonoBehaviour
 
     IEnumerator CargarPreguntasDesdeAPI()
     {
-        string token = PlayerPrefs.GetString("token");
-        int level = PlayerPrefs.GetInt("nivel_seleccionado", 1);
-        string gameId = PlayerPrefs.GetString("selected_game_id");
-
         string levelUrl = ApiConfig.GetLevel(gameId, level);
         UnityWebRequest www = UnityWebRequest.Get(levelUrl);
         www.SetRequestHeader("Authorization", token);
@@ -84,9 +90,12 @@ public class LilyManager : MonoBehaviour
             {
                 PreguntaData p = JsonUtility.FromJson<PreguntaData>(qRequest.downloadHandler.text);
 
+                // Guardamos el original questionId y las opciones
+                string originalQuestionId = p.question_id;
                 List<string> opcionesOriginales = new List<string>(p.options);
                 string respuestaCorrecta = opcionesOriginales[p.correctIndex];
 
+                // Limitar a 3 opciones
                 List<string> primerasTres = opcionesOriginales.Take(3).ToList();
                 if (!primerasTres.Contains(respuestaCorrecta))
                 {
@@ -94,15 +103,13 @@ public class LilyManager : MonoBehaviour
                     continue;
                 }
 
-                System.Random rng = new System.Random();
-                List<string> opcionesMezcladas = primerasTres.OrderBy(x => rng.Next()).ToList();
-                int nuevoCorrectIndex = opcionesMezcladas.IndexOf(respuestaCorrecta);
-
+                // Crear el problema sin el shuffle
                 Problema nuevo = new Problema
                 {
                     enunciado = p.text,
-                    valoresNenufares = opcionesMezcladas.ToArray(),
-                    correctIndex = nuevoCorrectIndex
+                    valoresNenufares = primerasTres.ToArray(),
+                    correctIndex = p.correctIndex, // Mantener el correctIndex original
+                    questionId = originalQuestionId // Guardar el original questionId
                 };
 
                 preguntasCompletas.Add(nuevo);
@@ -118,8 +125,6 @@ public class LilyManager : MonoBehaviour
         MostrarEnunciado(0);
         ActivarFila(0);
     }
-
-
 
     void GenerarMapaCompleto(int filasCount)
     {
@@ -138,7 +143,6 @@ public class LilyManager : MonoBehaviour
         {
             float posY = firstLilyY + f * espacioVertical;
             var prob = problemasDisponibles[f];
-            // Mostramos solo 3 nenúfares, aunque vengan más opciones
             int totalSlots = Mathf.Min(3, prob.valoresNenufares.Length);
             float gap = (screenWidth - totalSlots * lilyW) / (totalSlots + 1);
             var fila = new List<Lily>();
@@ -171,44 +175,33 @@ public class LilyManager : MonoBehaviour
         const float grassH = 1.5f;
         const float scale = 0.1f;
 
-        // césped inicio
-        var grassStart = Instantiate(prefabCesped,
-            new Vector3(centerX, bottomY + grassH / 2f, 0f),
-            Quaternion.identity);
+        var grassStart = Instantiate(prefabCesped, new Vector3(centerX, bottomY + grassH / 2f, 0f), Quaternion.identity);
         var srG1 = grassStart.GetComponent<SpriteRenderer>();
         srG1.drawMode = SpriteDrawMode.Tiled;
         srG1.size = new Vector2(width / scale, grassH / scale);
         grassStart.transform.localScale = Vector3.one * scale;
 
-        // agua entre nenúfares
         float firstLilyY = bottomY + 2f;
         float lastLilyY = firstLilyY + (generatedRowsCount - 1) * espacioVertical;
         float waterBot = bottomY + grassH;
         float waterTop = lastLilyY + 1.5f;
         float waterH = waterTop - waterBot;
 
-        var agua = Instantiate(prefabAgua,
-            new Vector3(centerX, waterBot + waterH / 2f, 1f),
-            Quaternion.identity);
+        var agua = Instantiate(prefabAgua, new Vector3(centerX, waterBot + waterH / 2f, 1f), Quaternion.identity);
         var srA = agua.GetComponent<SpriteRenderer>();
         srA.drawMode = SpriteDrawMode.Tiled;
         srA.size = new Vector2(width / scale, waterH / scale);
         agua.transform.localScale = Vector3.one * scale;
 
-        // 3) Césped final (meta) – ahora triple de alto [waterTop .. waterTop + 1.5 * 3]
         float finalGrassH = grassH * 3f;
-        var grassEnd = Instantiate(prefabCesped,
-            new Vector3(centerX, waterTop + finalGrassH / 2f, 0f),
-            Quaternion.identity);
+        var grassEnd = Instantiate(prefabCesped, new Vector3(centerX, waterTop + finalGrassH / 2f, 0f), Quaternion.identity);
         var srG2 = grassEnd.GetComponent<SpriteRenderer>();
         srG2.drawMode = SpriteDrawMode.Tiled;
         srG2.size = new Vector2(width / scale, finalGrassH / scale);
         grassEnd.transform.localScale = Vector3.one * scale;
 
-        // guardamos su posición para el “win routine”
         grassEndPos = grassEnd.transform.position;
 
-        // ajuste de cámara si necesitas fijarla al final
         var cf = cam.GetComponent<CameraFollow>();
         if (cf != null) cf.SetStopFollow(grassEnd.transform, finalGrassH);
     }
@@ -262,10 +255,14 @@ public class LilyManager : MonoBehaviour
         });
     }
 
-
     IEnumerator ProcesarRespuesta(Lily lily)
     {
         var current = filasLily[filaActual];
+
+        // Guardar la respuesta seleccionada
+        var pregunta = problemasDisponibles[filaActual];
+        // Añadimos el SubmitResponse con el ID de la pregunta original y el índice de la respuesta seleccionada
+        submitData.responses.Add(new SubmitResponse(pregunta.questionId, Array.IndexOf(pregunta.valoresNenufares, lily.textoValor.text)));
 
         if (!lily.esCorrecto)
         {
@@ -293,7 +290,10 @@ public class LilyManager : MonoBehaviour
         filaActual++;
 
         if (wasLast)
-            StartCoroutine(WinRoutine());
+        {
+            // Enviar todas las respuestas al final
+            StartCoroutine(FinalizarJuego());
+        }
         else
         {
             MostrarEnunciado(filaActual);
@@ -301,94 +301,60 @@ public class LilyManager : MonoBehaviour
         }
     }
 
-    IEnumerator WinRoutine()
+    IEnumerator FinalizarJuego()
     {
-        panelPregunta.SetActive(false);
-        if (musicaVictoria != null)
+        string url = ApiConfig.SubmitLevel(gameId, level);
+        string json = JsonUtility.ToJson(submitData);
+
+        UnityWebRequest req = new UnityWebRequest(url, "POST");
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+        req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        req.downloadHandler = new DownloadHandlerBuffer();
+        req.SetRequestHeader("Content-Type", "application/json");
+        req.SetRequestHeader("Authorization", token);
+
+        yield return req.SendWebRequest();
+
+        if (req.result != UnityWebRequest.Result.Success)
         {
-            audioSource.clip = musicaVictoria;
-            audioSource.volume = 0.3f; // valor entre 0 (silencio) y 1 (máximo)
-            audioSource.Play();
+            Debug.LogError($"❌ Error enviando respuestas: {req.error}");
+            Perder();
         }
-
-        // 1) un segundo de espera antes de saltar
-        yield return new WaitForSeconds(1f);
-
-        // 2) salto al centro del césped final
-        playerMovement.MoveTo(grassEndPos, null);
-        yield return new WaitForSeconds(playerMovement.jumpDuration);
-
-        // 3) baile: 4 pasos, cada paso 0.5s, desplazando ±0.5u y rotando 360°
-        Vector3 start = grassEndPos;
-        int steps = 4;
-        float stepDur = 0.5f;
-        for (int i = 0; i < steps; i++)
+        else
         {
-            float dir = (i % 2 == 0) ? 1f : -1f;
-            Vector3 targetPos = start + Vector3.right * 0.5f * dir;
-            float elapsed = 0f;
-            Quaternion startRot = playerMovement.transform.rotation;
-            while (elapsed < stepDur)
+            Debug.Log("✅ Envío exitoso: " + req.downloadHandler.text);
+            SubmitResult resultado = JsonUtility.FromJson<SubmitResult>(req.downloadHandler.text);
+
+            if (resultado.passed)
             {
-                float t = elapsed / stepDur;
-                playerMovement.transform.position = Vector3.Lerp(start, targetPos, t);
-                playerMovement.transform.rotation = Quaternion.Euler(0, 0, Mathf.Lerp(0, 360f * dir, t));
-                elapsed += Time.deltaTime;
-                yield return null;
+                Debug.Log("🎉 ¡Nivel aprobado!");
+                Time.timeScale = 0f;
+                Ganar();
             }
-
-            // fijar al final del paso
-            playerMovement.transform.position = targetPos;
-            start = targetPos;
+            else
+            {
+                Debug.Log("🚫 Nivel no aprobado.");
+                Perder();
+            }
         }
-
-        // 4) finalmente, el player queda de cabeza (rotación 180°)
-        playerMovement.transform.rotation = Quaternion.Euler(0, 0, 180f);
-
-        // 5) mostramos el panel de “ganaste”
-        Ganar();
     }
 
-    public void Perder()
+    void Ganar()
     {
-        Time.timeScale = 0f;
-        panelPregunta.SetActive(false);
-        textoFinal.text = "PERDISTE!";
+        textoFinal.text = "GANASTE!";
         panelFinish.SetActive(true);
     }
 
-    public void Ganar()
+    void Perder()
     {
-        Time.timeScale = 0f;
-        CurrencyManager.Instance.SumarMonedas(50);
-        panelPregunta.SetActive(false);
-        textoFinal.text = "GANASTE!";
+        textoFinal.text = "PERDISTE!";
         panelFinish.SetActive(true);
     }
 
     public void VolverAlMenu()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        SceneManager.LoadScene("Main");
     }
 
-    // Helpers
-    [System.Serializable]
-    class Wrapper
-    {
-        public Problema[] problemas;
-    }
-
-    string WrapArray(string j) => "{\"problemas\":" + j + "}";
-
-    void Shuffle<T>(List<T> list)
-        {
-            for (int i = 0; i < list.Count; i++)
-            {
-                var tmp = list[i];
-                int r = Random.Range(i, list.Count);
-                list[i] = list[r];
-                list[r] = tmp;
-            }
-        }
 }
