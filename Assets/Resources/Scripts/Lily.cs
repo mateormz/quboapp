@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 public class Lily : MonoBehaviour, IPointerClickHandler
 {
-    public TextMeshProUGUI textoValor; // referencia al texto
+    public TextMeshProUGUI textoValor;
     [HideInInspector] public bool esCorrecto;
     [HideInInspector] public LilyManager manager;
 
@@ -14,7 +14,6 @@ public class Lily : MonoBehaviour, IPointerClickHandler
             textoValor.text = nuevoValor;
     }
 
-    // Este método ahora llama al manager pasándole esta instancia
     public void OnPointerClick(PointerEventData eventData)
     {
         if (manager != null)

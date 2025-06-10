@@ -6,14 +6,6 @@ using UnityEngine.Networking;
 using System.Collections.Generic;
 using Data;
 
-[System.Serializable]
-public class LevelResponse
-{
-    public string game_id;
-    public int level_number;
-    public string[] questions;
-}
-
 public class PreguntaManager : MonoBehaviour
 {
     public TextMeshProUGUI textoPregunta;

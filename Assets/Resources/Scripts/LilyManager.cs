@@ -2,76 +2,124 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
+using UnityEngine.Networking;
+using Data;
+using System.Linq;
+
 
 [System.Serializable]
 public class Problema
 {
     public string enunciado;
     public string[] valoresNenufares;
-}
-
-[System.Serializable]
-public class ProblemasList
-{
-    public Problema[] problemas;
+    public int correctIndex;
 }
 
 
 public class LilyManager : MonoBehaviour
 {
-    [Header("Audio")] public AudioClip musicaVictoria;
-    [Header("Prefabs & UI")] public GameObject prefabLily;
+    public GameObject prefabLily;
     public GameObject prefabAgua;
     public GameObject prefabCesped;
     public GameObject playerPrefab;
-    public GameObject panelPregunta;
-    [Header("UI")] public GameObject panelFinish;
-    public TextMeshProUGUI textoFinal;
 
+    public GameObject panelPregunta;
+    public GameObject panelFinish;
+    public TextMeshProUGUI textoFinal;
     public TextMeshProUGUI textoEnunciado;
 
-    [Header("Layout")] public int filasCount = 5;
+    public int filasCount = 5;
     public float espacioVertical = 5f;
 
     private List<Problema> problemasDisponibles = new List<Problema>();
     private List<List<Lily>> filasLily = new List<List<Lily>>();
     private int filaActual = 0;
     private int generatedRowsCount = 0;
-    private PlayerMovement playerMovement;
+    [SerializeField] private GameObject mensajeIncorrectoUI;
 
-    // guardamos aquí la posición del césped final
+    private PlayerMovement playerMovement;
+    private AudioSource audioSource;
     private Vector3 grassEndPos;
 
-    private AudioSource audioSource;
-
+    public AudioClip musicaVictoria;
 
     void Start()
     {
         panelFinish.SetActive(false);
         panelPregunta.SetActive(true);
-        CargarProblemas();
+        StartCoroutine(CargarPreguntasDesdeAPI());
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+    }
+
+    IEnumerator CargarPreguntasDesdeAPI()
+    {
+        string token = PlayerPrefs.GetString("token");
+        int level = PlayerPrefs.GetInt("nivel_seleccionado", 1);
+        string gameId = PlayerPrefs.GetString("selected_game_id");
+
+        string levelUrl = ApiConfig.GetLevel(gameId, level);
+        UnityWebRequest www = UnityWebRequest.Get(levelUrl);
+        www.SetRequestHeader("Authorization", token);
+        yield return www.SendWebRequest();
+
+        if (www.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError("❌ Error cargando nivel: " + www.error);
+            yield break;
+        }
+
+        LevelResponse levelData = JsonUtility.FromJson<LevelResponse>(www.downloadHandler.text);
+        List<Problema> preguntasCompletas = new List<Problema>();
+
+        foreach (string qid in levelData.questions)
+        {
+            string questionUrl = ApiConfig.GetQuestion(qid);
+            UnityWebRequest qRequest = UnityWebRequest.Get(questionUrl);
+            qRequest.SetRequestHeader("Authorization", token);
+            yield return qRequest.SendWebRequest();
+
+            if (qRequest.result == UnityWebRequest.Result.Success)
+            {
+                PreguntaData p = JsonUtility.FromJson<PreguntaData>(qRequest.downloadHandler.text);
+
+                List<string> opcionesOriginales = new List<string>(p.options);
+                string respuestaCorrecta = opcionesOriginales[p.correctIndex];
+
+                List<string> primerasTres = opcionesOriginales.Take(3).ToList();
+                if (!primerasTres.Contains(respuestaCorrecta))
+                {
+                    Debug.LogWarning($"❌ Pregunta descartada: respuesta correcta '{respuestaCorrecta}' no está en las 3 primeras.");
+                    continue;
+                }
+
+                System.Random rng = new System.Random();
+                List<string> opcionesMezcladas = primerasTres.OrderBy(x => rng.Next()).ToList();
+                int nuevoCorrectIndex = opcionesMezcladas.IndexOf(respuestaCorrecta);
+
+                Problema nuevo = new Problema
+                {
+                    enunciado = p.text,
+                    valoresNenufares = opcionesMezcladas.ToArray(),
+                    correctIndex = nuevoCorrectIndex
+                };
+
+                preguntasCompletas.Add(nuevo);
+            }
+        }
+
+        problemasDisponibles.Clear();
+        problemasDisponibles.AddRange(preguntasCompletas);
+
         GenerarMapaCompleto(filasCount);
         GenerarEntorno();
         SpawnPlayerEnInicio();
         MostrarEnunciado(0);
         ActivarFila(0);
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.playOnAwake = false;
     }
 
-    void CargarProblemas()
-    {
-        TextAsset jsonText = Resources.Load<TextAsset>("QuboJump/problems");
-        if (jsonText != null)
-        {
-            var data = JsonUtility.FromJson<ProblemasList>(WrapArray(jsonText.text));
-            problemasDisponibles = new List<Problema>(data.problemas);
-            Shuffle(problemasDisponibles);
-        }
-        else Debug.LogError("No se pudo cargar el JSON de problemas.");
-    }
+
 
     void GenerarMapaCompleto(int filasCount)
     {
@@ -90,6 +138,7 @@ public class LilyManager : MonoBehaviour
         {
             float posY = firstLilyY + f * espacioVertical;
             var prob = problemasDisponibles[f];
+            // Mostramos solo 3 nenúfares, aunque vengan más opciones
             int totalSlots = Mathf.Min(3, prob.valoresNenufares.Length);
             float gap = (screenWidth - totalSlots * lilyW) / (totalSlots + 1);
             var fila = new List<Lily>();
@@ -185,59 +234,71 @@ public class LilyManager : MonoBehaviour
     void ActivarFila(int f)
     {
         if (f < 0 || f >= filasLily.Count) return;
-        var prob = problemasDisponibles[f];
-        var opciones = new List<string> { prob.valoresNenufares[0] };
-        var distract = new List<string>(prob.valoresNenufares);
-        distract.RemoveAt(0);
-        Shuffle(distract);
-        for (int i = 0; i < Mathf.Min(2, distract.Count); i++)
-            opciones.Add(distract[i]);
-        Shuffle(opciones);
-
+        var problema = problemasDisponibles[f];
         var fila = filasLily[f];
-        for (int i = 0; i < fila.Count; i++)
+
+        for (int i = 0; i < fila.Count && i < problema.valoresNenufares.Length; i++)
         {
-            fila[i].SetValor(opciones[i]);
-            fila[i].esCorrecto = opciones[i] == prob.valoresNenufares[0];
+            bool esCorrecto = (i == problema.correctIndex);
+            fila[i].SetValor(problema.valoresNenufares[i]);
+            fila[i].esCorrecto = esCorrecto;
+            Debug.Log($"🌱 Nenúfar {i}: {problema.valoresNenufares[i]} - esCorrecto: {esCorrecto}");
         }
     }
 
     public void OnLilyClicked(Lily lily)
     {
-        if (filaActual < 0 || filaActual >= filasLily.Count ||
-            !filasLily[filaActual].Contains(lily)) return;
+        if (filaActual < 0 || filaActual >= filasLily.Count || !filasLily[filaActual].Contains(lily))
+            return;
 
-        foreach (var fila in filasLily)
-        foreach (var l in fila)
+        foreach (var l in filasLily[filaActual])
             l.GetComponent<Collider2D>().enabled = false;
+
+        Debug.Log($"👆 Click en nenúfar con texto: {lily.textoValor.text}, esCorrecto: {lily.esCorrecto}");
 
         playerMovement.MoveTo(lily.transform.position, () =>
         {
-            if (!lily.esCorrecto)
-            {
-                Destroy(lily.gameObject);
-                Perder();
-                return;
-            }
-
-            var current = filasLily[filaActual];
-            foreach (var l in current)
-                if (l != lily)
-                    Destroy(l.gameObject);
-            filasLily[filaActual] = new List<Lily> { lily };
-
-            bool wasLast = filaActual == filasLily.Count - 1;
-            filaActual++;
-            CurrencyManager.Instance.SumarMonedas(5);
-
-            if (wasLast)
-                StartCoroutine(WinRoutine());
-            else
-            {
-                MostrarEnunciado(filaActual);
-                ActivarFila(filaActual);
-            }
+            StartCoroutine(ProcesarRespuesta(lily));
         });
+    }
+
+
+    IEnumerator ProcesarRespuesta(Lily lily)
+    {
+        var current = filasLily[filaActual];
+
+        if (!lily.esCorrecto)
+        {
+            Debug.Log("❌ Nenúfar incorrecto: se eliminan los otros.");
+            CurrencyManager.Instance.SumarMonedas(1);
+
+            // Mostrar mensaje
+            mensajeIncorrectoUI.SetActive(true);
+            yield return new WaitForSeconds(1f);
+            mensajeIncorrectoUI.SetActive(false);
+        }
+        else
+        {
+            Debug.Log("✅ Nenúfar correcto: se destruyen los demás.");
+            CurrencyManager.Instance.SumarMonedas(5);
+        }
+
+        foreach (var l in current)
+            if (l != lily)
+                Destroy(l.gameObject);
+
+        filasLily[filaActual] = new List<Lily> { lily };
+
+        bool wasLast = filaActual == filasLily.Count - 1;
+        filaActual++;
+
+        if (wasLast)
+            StartCoroutine(WinRoutine());
+        else
+        {
+            MostrarEnunciado(filaActual);
+            ActivarFila(filaActual);
+        }
     }
 
     IEnumerator WinRoutine()
@@ -321,13 +382,13 @@ public class LilyManager : MonoBehaviour
     string WrapArray(string j) => "{\"problemas\":" + j + "}";
 
     void Shuffle<T>(List<T> list)
-    {
-        for (int i = 0; i < list.Count; i++)
         {
-            var tmp = list[i];
-            int r = Random.Range(i, list.Count);
-            list[i] = list[r];
-            list[r] = tmp;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var tmp = list[i];
+                int r = Random.Range(i, list.Count);
+                list[i] = list[r];
+                list[r] = tmp;
+            }
         }
-    }
 }
