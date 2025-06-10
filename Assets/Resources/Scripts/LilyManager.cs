@@ -340,13 +340,15 @@ public class LilyManager : MonoBehaviour
     }
 
     void Ganar()
-    {
+    {   
+        panelPregunta.SetActive(false);
         textoFinal.text = "GANASTE!";
         panelFinish.SetActive(true);
     }
 
     void Perder()
     {
+        panelPregunta.SetActive(false);
         textoFinal.text = "PERDISTE!";
         panelFinish.SetActive(true);
     }

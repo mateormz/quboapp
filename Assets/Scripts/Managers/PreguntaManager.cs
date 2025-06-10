@@ -13,6 +13,7 @@ public class PreguntaManager : MonoBehaviour
     public GameObject panelPerdiste;
     public GameObject panelCargando;
     public GameObject panelVictoria;
+    public GameObject mensajeIncorrectoUI;
 
     private PreguntaData[] preguntas;
     private int indiceActual = 0;
@@ -124,11 +125,21 @@ public class PreguntaManager : MonoBehaviour
         {
             CurrencyManager.Instance.SumarMonedas(5);
         }
+        else
+        {
+            mensajeIncorrectoUI.SetActive(true);
+            StartCoroutine(MostrarMensajeIncorrecto()); 
+        }
 
         indiceActual++;
         MostrarPreguntaActual();
     }
 
+    IEnumerator MostrarMensajeIncorrecto()
+    {
+        yield return new WaitForSeconds(1f);
+        mensajeIncorrectoUI.SetActive(false);
+    }
     IEnumerator FinalizarJuego()
     {
         if (panelCargando != null) panelCargando.SetActive(true);
