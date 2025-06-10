@@ -29,6 +29,12 @@ public class CambiarEscena : MonoBehaviour
         StartCoroutine(CargarJuegoConRetraso());
     }
 
+    public void IrALevelsGame1()
+    {
+        SceneManager.LoadScene("LevelsGame1");
+    }
+
+
     IEnumerator CargarJuegoConRetraso()
     {
         yield return new WaitForSecondsRealtime(0.1f); // <- Esto ignora Time.timeScale
