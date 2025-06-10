@@ -17,7 +17,9 @@ public class PetShopController : MonoBehaviour
 
     void Start()
     {
-        textoMonedas.text = "Cargando monedas...";
+        textoMonedas.text = "Monedas: " + CurrencyManager.Instance.GetMonedas();
+        CurrencyManager.Instance.OnMonedasActualizadas += ActualizarTextoMonedas;
+
         StartCoroutine(CargarSkinsDesdeAPI());
     }
 
@@ -26,7 +28,7 @@ public class PetShopController : MonoBehaviour
         string user_id = PlayerPrefs.GetString("user_id");
         string token = PlayerPrefs.GetString("token");
 
-        // GET - Obtener skins del backend
+        // 1. Obtener lista de skins
         using (UnityWebRequest request = UnityWebRequest.Get(ApiConfig.GET_SKINS_URL))
         {
             request.SetRequestHeader("Authorization", token);
@@ -36,13 +38,7 @@ public class PetShopController : MonoBehaviour
             {
                 SkinsResponse response = JsonUtility.FromJson<SkinsResponse>("{\"skins\":" + request.downloadHandler.text + "}");
                 skinsDisponibles = new List<Skin>(response.skins);
-
-                skinsDisponibles.Sort((a, b) =>
-                {
-                    int numA = ExtraerNumero(a.skin_id);
-                    int numB = ExtraerNumero(b.skin_id);
-                    return numA.CompareTo(numB);
-                });
+                skinsDisponibles.Sort((a, b) => ExtraerNumero(a.skin_id).CompareTo(ExtraerNumero(b.skin_id)));
             }
             else
             {
@@ -51,7 +47,7 @@ public class PetShopController : MonoBehaviour
             }
         }
 
-        // GET - Obtener datos del usuario (skins desbloqueadas y monedas)
+        // 2. Obtener skin seleccionada y skins desbloqueadas
         using (UnityWebRequest userRequest = UnityWebRequest.Get(ApiConfig.GET_USER_SKINS_URL(user_id)))
         {
             userRequest.SetRequestHeader("Authorization", token);
@@ -62,8 +58,6 @@ public class PetShopController : MonoBehaviour
                 UserSkinsResponse userData = JsonUtility.FromJson<UserSkinsResponse>(userRequest.downloadHandler.text);
                 skinsDesbloqueadas = new List<string>(userData.skins_unlocked);
                 skinSeleccionada = userData.skin_selected;
-                CurrencyManager.Instance.SetMonedas(userData.qu_coin);
-                textoMonedas.text = "Monedas: " + userData.qu_coin;
             }
             else
             {
@@ -93,11 +87,10 @@ public class PetShopController : MonoBehaviour
 
             if (desbloqueada)
             {
-                // Mostrar "equipado" o "equipar"
                 if (skin.skin_id == skinSeleccionada)
                 {
                     priceText.text = "Equipado";
-                    btn.interactable = false;  // No se puede volver a equipar
+                    btn.interactable = false;
                 }
                 else
                 {
@@ -107,7 +100,6 @@ public class PetShopController : MonoBehaviour
             }
             else
             {
-                // Mostrar el precio si no está desbloqueada
                 priceText.text = skin.price + " qu";
                 btn.interactable = CurrencyManager.Instance.GetMonedas() >= skin.price;
             }
@@ -132,7 +124,6 @@ public class PetShopController : MonoBehaviour
         }
     }
 
-    // POST - Actualizar skin seleccionada
     IEnumerator SeleccionarSkin(string skinId, string user_id, string token)
     {
         string url = ApiConfig.UPDATE_SKIN_SELECTED(user_id);
@@ -151,8 +142,9 @@ public class PetShopController : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 Debug.Log("Skin seleccionada: " + skinId);
-                skinSeleccionada = skinId;            // ✅ Actualizar localmente
-                GenerarUI();                          // ✅ Refrescar UI sin recargar todo
+                skinSeleccionada = skinId;
+                PlayerPrefs.SetString("skinSeleccionada", skinId);
+                GenerarUI();
             }
             else
             {
@@ -161,11 +153,10 @@ public class PetShopController : MonoBehaviour
         }
     }
 
-    // POST - Desbloquear skin
     IEnumerator DesbloquearSkin(string skinId, int precio, string user_id, string token)
     {
         string url = ApiConfig.UNLOCK_SKIN(user_id);
-        var data = JsonUtility.ToJson(new SkinDesbloqueo { skin_to_unlock = skinId });
+        var data = JsonUtility.ToJson(new SkinDesbloqueo { skin_id = skinId });
 
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
         {
@@ -180,9 +171,9 @@ public class PetShopController : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 CurrencyManager.Instance.RestarMonedas(precio);
-                skinsDesbloqueadas.Add(skinId);       // ✅ Actualizar localmente
+                skinsDesbloqueadas.Add(skinId);
                 Debug.Log("Skin desbloqueada: " + skinId);
-                GenerarUI();                          // ✅ Refrescar UI sin recargar todo
+                GenerarUI();
             }
             else
             {
@@ -216,8 +207,7 @@ public class PetShopController : MonoBehaviour
             CurrencyManager.Instance.OnMonedasActualizadas -= ActualizarTextoMonedas;
     }
 
-    [System.Serializable]
-    public class Skin
+    [System.Serializable] public class Skin
     {
         public string skin_id;
         public string name;
@@ -225,30 +215,26 @@ public class PetShopController : MonoBehaviour
         public string image_url;
     }
 
-    [System.Serializable]
-    public class SkinsResponse
+    [System.Serializable] public class SkinsResponse
     {
         public Skin[] skins;
     }
 
-    [System.Serializable]
-    public class UserSkinsResponse
+    [System.Serializable] public class UserSkinsResponse
     {
         public string skin_selected;
         public string[] skins_unlocked;
         public int qu_coin;
     }
 
-    [System.Serializable]
-    public class SkinSeleccionada
+    [System.Serializable] public class SkinSeleccionada
     {
         public string skin_selected;
     }
 
-    [System.Serializable]
-    public class SkinDesbloqueo
+    [System.Serializable] public class SkinDesbloqueo
     {
-        public string skin_to_unlock;
+        public string skin_id;
     }
 
     int ExtraerNumero(string id)

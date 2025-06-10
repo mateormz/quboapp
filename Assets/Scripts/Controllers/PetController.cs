@@ -9,35 +9,17 @@ public class PetController : MonoBehaviour
 
     void Start()
     {
-        StartCoroutine(CargarSkinDesdeBackend());
+        StartCoroutine(CargarSkinSeleccionada());
+        Debug.Log("Monedas: " + PlayerPrefs.GetInt("monedas"));
+        Debug.Log("Skin: " + PlayerPrefs.GetString("skinSeleccionada"));
     }
 
-    IEnumerator CargarSkinDesdeBackend()
+    IEnumerator CargarSkinSeleccionada()
     {
-        string user_id = PlayerPrefs.GetString("user_id");
+        string selectedSkinId = PlayerPrefs.GetString("skinSeleccionada", "skin1");
         string token = PlayerPrefs.GetString("token");
 
-        string selectedSkinId = null;
-
-        // 1. Obtener la skin seleccionada del usuario
-        using (UnityWebRequest userRequest = UnityWebRequest.Get(ApiConfig.GET_USER_SKINS_URL(user_id)))
-        {
-            userRequest.SetRequestHeader("Authorization", token);
-            yield return userRequest.SendWebRequest();
-
-            if (userRequest.result == UnityWebRequest.Result.Success)
-            {
-                PetUserSkinData userData = JsonUtility.FromJson<PetUserSkinData>(userRequest.downloadHandler.text);
-                selectedSkinId = userData.skin_selected;
-            }
-            else
-            {
-                Debug.LogError("Error al obtener skin seleccionada: " + userRequest.downloadHandler.text);
-                yield break;
-            }
-        }
-
-        // 2. Obtener la lista de skins disponibles
+        // Obtener lista de skins disponibles
         List<Skin> skinsDisponibles = new();
         using (UnityWebRequest skinsRequest = UnityWebRequest.Get(ApiConfig.GET_SKINS_URL))
         {
@@ -49,6 +31,7 @@ public class PetController : MonoBehaviour
                 PetSkinsResponse response = JsonUtility.FromJson<PetSkinsResponse>("{\"skins\":" + skinsRequest.downloadHandler.text + "}");
                 skinsDisponibles = new List<Skin>(response.skins);
 
+                // Buscar la skin seleccionada
                 Skin skinSeleccionada = skinsDisponibles.Find(s => s.skin_id == selectedSkinId);
 
                 if (skinSeleccionada != null)
@@ -63,7 +46,7 @@ public class PetController : MonoBehaviour
             }
             else
             {
-                Debug.LogError("Error al obtener lista de skins: " + skinsRequest.downloadHandler.text);
+                Debug.LogError("❌ Error al obtener lista de skins: " + skinsRequest.downloadHandler.text);
             }
         }
     }
@@ -84,12 +67,6 @@ public class PetController : MonoBehaviour
                 Debug.LogError("❌ Error al cargar imagen de la skin: " + request.downloadHandler.text);
             }
         }
-    }
-
-    [System.Serializable]
-    public class PetUserSkinData
-    {
-        public string skin_selected;
     }
 
     [System.Serializable]
