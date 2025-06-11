@@ -571,6 +571,7 @@ GameObject:
   m_Component:
   - component: {fileID: 633069565}
   - component: {fileID: 633069566}
+  - component: {fileID: 633069567}
   m_Layer: 5
   m_Name: Juego1
   m_TagString: Untagged
@@ -643,19 +644,21 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 0}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1986469066}
-        m_TargetAssemblyTypeName: CambiarEscena, Assembly-CSharp
-        m_MethodName: IrAJuego1
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
+--- !u!114 &633069567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 633069564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9418eb00f21042045b2d770b6d1c3950, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameId: ed7bdef1-74c2-4a1c-a055-d5876b069734
+  escenaDeNiveles: LevelsGame1
 --- !u!1 &657826283
 GameObject:
   m_ObjectHideFlags: 0
@@ -919,9 +922,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1986469066}
-        m_TargetAssemblyTypeName: CambiarEscena, Assembly-CSharp
-        m_MethodName: IrAJuego2
+      - m_Target: {fileID: 1745603516}
+        m_TargetAssemblyTypeName: GameSelector, Assembly-CSharp
+        m_MethodName: SeleccionarJuego
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1297,9 +1300,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1986469066}
-        m_TargetAssemblyTypeName: CambiarEscena, Assembly-CSharp
-        m_MethodName: IrAJuego1
+      - m_Target: {fileID: 633069567}
+        m_TargetAssemblyTypeName: GameSelector, Assembly-CSharp
+        m_MethodName: SeleccionarJuego
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1530,6 +1533,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1745603514}
   - component: {fileID: 1745603515}
+  - component: {fileID: 1745603516}
   m_Layer: 5
   m_Name: Juego2
   m_TagString: Untagged
@@ -1602,19 +1606,21 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 0}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1986469066}
-        m_TargetAssemblyTypeName: CambiarEscena, Assembly-CSharp
-        m_MethodName: IrAJuego2
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
+--- !u!114 &1745603516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1745603513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9418eb00f21042045b2d770b6d1c3950, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameId: d8e09986-6c0a-4301-a16a-89f4ae1d00c4
+  escenaDeNiveles: LevelsGame2
 --- !u!1 &1806541896
 GameObject:
   m_ObjectHideFlags: 0

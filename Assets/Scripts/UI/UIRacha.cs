@@ -7,7 +7,7 @@ public class UIRacha : MonoBehaviour
 
     void Start()
     {
-        int racha = PlayerPrefs.GetInt("currentStreak", 1);
+        int racha = PlayerPrefs.GetInt("streak", 1);
         textoRacha.text = "Racha: " + racha + " días";
     }
 }
