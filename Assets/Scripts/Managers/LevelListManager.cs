@@ -10,16 +10,18 @@ public class LevelListManager : MonoBehaviour
     private string gameId;
     private int levelDesbloqueado = 0;
 
+
     void Start()
     {
-        Debug.Log("iniciando...");
-        gameId = PlayerPrefs.GetString("selected_game_id", ApiConfig.GameIds.Qubo1); // por defecto Qubo1
-        Debug.Log("gameid..." + gameId);
+        Debug.Log("Iniciando...");
+        gameId = PlayerPrefs.GetString("selected_game_id", ApiConfig.GameIds.Qubo1); // Por defecto Qubo1
+        Debug.Log("gameId recuperado: " + gameId);
+        
         levelDesbloqueado = PlayerPrefs.GetInt("nivel_desbloqueado_" + gameId, 0);
-        Debug.Log("leveldesbloqueado..." + levelDesbloqueado);
+        Debug.Log("Nivel desbloqueado..." + levelDesbloqueado);
 
         int totalLevels = PlayerPrefs.GetInt("total_levels_" + gameId, 0);
-        Debug.Log("totallvels..." + totalLevels);
+        Debug.Log("Total niveles..." + totalLevels);
 
         StartCoroutine(CrearBotones(totalLevels));
     }

@@ -49,6 +49,7 @@ public class UserDataLoader : MonoBehaviour
         StartCoroutine(ObtenerCantidadDeNiveles());
     }
 
+
     IEnumerator ObtenerCantidadDeNiveles()
     {
         string token = PlayerPrefs.GetString("token");
@@ -65,16 +66,21 @@ public class UserDataLoader : MonoBehaviour
             yield break;
         }
 
+        // Mostrar la respuesta del servidor
+        Debug.Log("Respuesta de juegos: " + req.downloadHandler.text);
+
         GameListWrapper wrapper = JsonUtility.FromJson<GameListWrapper>(req.downloadHandler.text);
         foreach (GameData game in wrapper.games)
         {
             if (game.game_id == gameId)
             {
+                Debug.Log($"Juego encontrado: {game.name}, Niveles: {game.level_count}");
                 PlayerPrefs.SetInt("total_levels_" + gameId, game.level_count);
                 break;
             }
         }
     }
+
 
     [System.Serializable]
     public class GameListWrapper
