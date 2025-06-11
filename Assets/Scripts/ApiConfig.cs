@@ -1,8 +1,8 @@
 // Scripts/ApiConfig.cs
 public static class ApiConfig
 {
-    public static readonly string AUTH_BASE_URL = "https://g6tzwkucx3.execute-api.us-east-1.amazonaws.com/dev";
-    public static readonly string SKINS_BASE_URL = "https://37aiksov83.execute-api.us-east-1.amazonaws.com/dev";
+    public static readonly string AUTH_BASE_URL = "https://t7ciz97x12.execute-api.us-east-1.amazonaws.com/dev";
+    public static readonly string SKINS_BASE_URL = "https://q56793cuc6.execute-api.us-east-1.amazonaws.com/dev";
 
     // Auth
     public static readonly string LOGIN_URL = $"{AUTH_BASE_URL}/auth/login";
@@ -28,7 +28,7 @@ public static class ApiConfig
   
 
     // === Base del juego ===
-    public static readonly string GAME_BASE_URL = "https://0mztjazn7i.execute-api.us-east-1.amazonaws.com/dev";
+    public static readonly string GAME_BASE_URL = "https://cs3veym1u9.execute-api.us-east-1.amazonaws.com/dev";
 
     public static string GetLevel(string gameId, int level) =>
         $"{GAME_BASE_URL}/games/{gameId}/levels/{level}";
@@ -48,8 +48,7 @@ public static class ApiConfig
     // === Game IDs ===
     public static class GameIds
     {
-        public static readonly string Qubo1 = "a3d59a39-c738-450f-8f56-af0bd0ef4302";
-        public static readonly string Qubo2 = "89ecea64-e70b-474c-b51f-dbeaa44605bc";
+        public static readonly string Qubo1 = "ed7bdef1-74c2-4a1c-a055-d5876b069734";
+        public static readonly string Qubo2 = "d8e09986-6c0a-4301-a16a-89f4ae1d00c4";
     }
-}
 }
