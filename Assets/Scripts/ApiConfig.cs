@@ -10,7 +10,7 @@ public static class ApiConfig
 
     public static string GetStudentSkins(string userId) => $"{AUTH_BASE_URL}/auth/student/skins/{userId}";
     public static string UpdateStudentSkin(string userId) => $"{AUTH_BASE_URL}/auth/student/skin/{userId}";
-    
+
     // Obtener datos de un usuario específico
     public static string GetUserData(string userId) => $"{AUTH_BASE_URL}/auth/users/get/{userId}";
 
@@ -38,4 +38,11 @@ public static class ApiConfig
         public static readonly string Qubo1 = "a3d59a39-c738-450f-8f56-af0bd0ef4302";
         public static readonly string Qubo2 = "89ecea64-e70b-474c-b51f-dbeaa44605bc";
     }
+
+    // === Base para Feedback ===
+    public static readonly string FEEDBACK_BASE_URL = "https://xbtj4m5148.execute-api.us-east-1.amazonaws.com/dev";
+    
+    // Endpoint para obtener el feedback
+    // El método POST no debería tener el session_id en la URL, lo manejamos en el body
+    public static string GET_FEEDBACK() => $"{FEEDBACK_BASE_URL}/feedback/generate"; // Eliminamos el ?session_id={sessionId} pero lo pasamos en el body
 }
