@@ -657,7 +657,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9418eb00f21042045b2d770b6d1c3950, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameId: a3d59a39-c738-450f-8f56-af0bd0ef4302
+  gameId: ed7bdef1-74c2-4a1c-a055-d5876b069734
   escenaDeNiveles: LevelsGame1
 --- !u!1 &657826283
 GameObject:
@@ -1619,7 +1619,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9418eb00f21042045b2d770b6d1c3950, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameId: 89ecea64-e70b-474c-b51f-dbeaa44605bc
+  gameId: d8e09986-6c0a-4301-a16a-89f4ae1d00c4
   escenaDeNiveles: LevelsGame2
 --- !u!1 &1806541896
 GameObject:
