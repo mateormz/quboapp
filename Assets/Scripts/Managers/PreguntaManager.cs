@@ -6,14 +6,6 @@ using UnityEngine.Networking;
 using System.Collections.Generic;
 using Data;
 
-[System.Serializable]
-public class LevelResponse
-{
-    public string game_id;
-    public int level_number;
-    public string[] questions;
-}
-
 public class PreguntaManager : MonoBehaviour
 {
     public TextMeshProUGUI textoPregunta;
@@ -21,6 +13,7 @@ public class PreguntaManager : MonoBehaviour
     public GameObject panelPerdiste;
     public GameObject panelCargando;
     public GameObject panelVictoria;
+    public GameObject mensajeIncorrectoUI;
 
     private PreguntaData[] preguntas;
     private int indiceActual = 0;
@@ -132,11 +125,21 @@ public class PreguntaManager : MonoBehaviour
         {
             CurrencyManager.Instance.SumarMonedas(5);
         }
+        else
+        {
+            mensajeIncorrectoUI.SetActive(true);
+            StartCoroutine(MostrarMensajeIncorrecto()); 
+        }
 
         indiceActual++;
         MostrarPreguntaActual();
     }
 
+    IEnumerator MostrarMensajeIncorrecto()
+    {
+        yield return new WaitForSeconds(1f);
+        mensajeIncorrectoUI.SetActive(false);
+    }
     IEnumerator FinalizarJuego()
     {
         if (panelCargando != null) panelCargando.SetActive(true);

@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Tooltip("Duración en segundos del salto")]
+    [Tooltip("Duraciï¿½n en segundos del salto")]
     public float jumpDuration = 0.6f;
 
-    [Tooltip("Altura máxima del arco de salto")]
+    [Tooltip("Altura mï¿½xima del arco de salto")]
     public float jumpHeight = 1f;
 
     private bool isMoving = false;
@@ -30,7 +30,7 @@ public class PlayerMovement : MonoBehaviour
         while (elapsed < jumpDuration)
         {
             float t = elapsed / jumpDuration;
-            // interpolación lineal + arco vertical
+            // interpolaciï¿½n lineal + arco vertical
             Vector3 horizontal = Vector3.Lerp(start, target, t);
             float height = Mathf.Sin(Mathf.PI * t) * jumpHeight;
             transform.position = horizontal + Vector3.up * height;
