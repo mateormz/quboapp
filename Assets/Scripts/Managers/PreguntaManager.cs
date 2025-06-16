@@ -178,8 +178,15 @@ public class PreguntaManager : MonoBehaviour
             else
             {
                 Debug.Log("🚫 Nivel no aprobado.");
+
+                // Solo guardamos el sessionId si perdió
+                PlayerPrefs.SetString("feedback_session_id", resultado.sessionId);
+                PlayerPrefs.Save();
+                Debug.Log("🧠 SessionId guardado para feedback: " + resultado.sessionId);
+
                 Perder();
             }
+
         }
     }
 

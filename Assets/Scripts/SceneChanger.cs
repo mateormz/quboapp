@@ -34,6 +34,10 @@ public class CambiarEscena : MonoBehaviour
         SceneManager.LoadScene("LevelsGame1");
     }
 
+    public void IrAFeedback()
+    {
+        SceneManager.LoadScene("FeedbackScene");
+    }
 
     IEnumerator CargarJuegoConRetraso()
     {

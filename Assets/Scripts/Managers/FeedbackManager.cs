@@ -11,7 +11,9 @@ public class FeedbackManager : MonoBehaviour
     [SerializeField] private Transform contentParent; // El Content dentro de HorizontalScroll
 
     // Asignamos el session_id proporcionado directamente
-    public string sessionId = "3e970c03-12bb-44cf-a896-45a1ee7f5882"; // Session ID de ejemplo para probar
+    private string sessionId;
+    private string token;
+ // Session ID de ejemplo para probar
 
     // Usar ApiConfig para la URL
     private string feedbackUrl;
@@ -53,19 +55,25 @@ public class FeedbackManager : MonoBehaviour
 
     void Start()
     {
-        // Verifica si tenemos un sessionId válido
+        sessionId = PlayerPrefs.GetString("feedback_session_id", "");
+        token = PlayerPrefs.GetString("token", "");
+
         if (string.IsNullOrEmpty(sessionId))
         {
-            Debug.LogError("El session_id es nulo o vacío.");
+            Debug.LogError("❌ No se encontró el session_id en PlayerPrefs.");
             return;
         }
 
-        // Construir la URL de Feedback con ApiConfig
-        feedbackUrl = ApiConfig.GET_FEEDBACK(); // ✅ Sin argumentos
+        if (string.IsNullOrEmpty(token))
+        {
+            Debug.LogError("❌ No se encontró el token en PlayerPrefs.");
+            return;
+        }
 
-        // Iniciar la solicitud al backend
+        feedbackUrl = ApiConfig.GET_FEEDBACK();
         StartCoroutine(FetchFeedback());
     }
+
 
     IEnumerator FetchFeedback()
     {
@@ -82,7 +90,6 @@ public class FeedbackManager : MonoBehaviour
         request.downloadHandler = new DownloadHandlerBuffer();
 
         // Token de autenticación provisional
-        string token = "85650d79-abab-4bf9-9a00-cc3e36bf5dbc";
         request.SetRequestHeader("Content-Type", "application/json");
         request.SetRequestHeader("Authorization", token); // Si necesitas usar "Bearer", cambia a $"Bearer {token}"
 

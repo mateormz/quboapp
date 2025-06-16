@@ -59,7 +59,7 @@ public static class ApiConfig
     }
 
     // === Base para Feedback ===
-    public static readonly string FEEDBACK_BASE_URL = "https://xbtj4m5148.execute-api.us-east-1.amazonaws.com/dev";
+    public static readonly string FEEDBACK_BASE_URL = "https://lxmh3nm7g5.execute-api.us-east-1.amazonaws.com/dev";
     
     // Endpoint para obtener el feedback
     // El método POST no debería tener el session_id en la URL, lo manejamos en el body
