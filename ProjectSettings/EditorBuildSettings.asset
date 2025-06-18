@@ -38,6 +38,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/FeedbackScene.unity
     guid: 085a0a01307d15a4887453c63e9f980f
+  - enabled: 1
+    path: Assets/Scenes/Assignments.unity
+    guid: daca997e5d5918c4daa49cc66895b65e
   m_configObjects:
     com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: 9e798557cecd0e941bcadf059a881cd1, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: dd0b21d8b8efc9b4cb8cfc6ccedc9bd2, type: 2}

@@ -39,6 +39,11 @@ public class CambiarEscena : MonoBehaviour
         SceneManager.LoadScene("FeedbackScene");
     }
 
+    public void IrAAssignments()
+    {
+        SceneManager.LoadScene("Assignments");
+    }
+
     IEnumerator CargarJuegoConRetraso()
     {
         yield return new WaitForSecondsRealtime(0.1f); // <- Esto ignora Time.timeScale
