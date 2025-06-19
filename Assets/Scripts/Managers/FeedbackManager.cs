@@ -42,14 +42,19 @@ public class FeedbackManager : MonoBehaviour
         public Feedback[] feedback;
     }
 
-    // NUEVA clase para serializar correctamente el body del POST
     [System.Serializable]
     public class FeedbackRequest
     {
         public string session_id;
-        public FeedbackRequest(string sessionId)
+        public string type; // opcional
+
+        public FeedbackRequest(string sessionId, bool esAsignacion)
         {
             this.session_id = sessionId;
+            if (esAsignacion)
+            {
+                this.type = "Assignments";
+            }
         }
     }
 
@@ -77,26 +82,22 @@ public class FeedbackManager : MonoBehaviour
 
     IEnumerator FetchFeedback()
     {
-        // Crear objeto de solicitud con el sessionId
-        var requestBody = new FeedbackRequest(sessionId);
+        bool esAsignacion = PlayerPrefs.GetInt("modo_asignacion", 0) == 1;
+
+        var requestBody = new FeedbackRequest(sessionId, esAsignacion);
         var postData = JsonUtility.ToJson(requestBody);
         Debug.Log("POST body: " + postData);
 
         var request = new UnityWebRequest(feedbackUrl, "POST");
-
-        // Convierte el JSON en un arreglo de bytes
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(postData);
+
         request.uploadHandler = new UploadHandlerRaw(bodyRaw);
         request.downloadHandler = new DownloadHandlerBuffer();
-
-        // Token de autenticación provisional
         request.SetRequestHeader("Content-Type", "application/json");
-        request.SetRequestHeader("Authorization", token); // Si necesitas usar "Bearer", cambia a $"Bearer {token}"
+        request.SetRequestHeader("Authorization", token);
 
-        // Enviar la solicitud
         yield return request.SendWebRequest();
 
-        // Revisar el resultado
         if (request.result == UnityWebRequest.Result.Success)
         {
             FeedbackResponse response = JsonUtility.FromJson<FeedbackResponse>(request.downloadHandler.text);
@@ -108,8 +109,8 @@ public class FeedbackManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Error fetching feedback: " + request.error);
-            Debug.LogError("Response: " + request.downloadHandler.text);
+            Debug.LogError("❌ Error fetching feedback: " + request.error);
+            Debug.LogError("Respuesta: " + request.downloadHandler.text);
         }
     }
 
@@ -135,6 +136,4 @@ public class FeedbackManager : MonoBehaviour
         if (conceptText != null)
             conceptText.text = fb.guide.concept;
     }
-
-
 }
