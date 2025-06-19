@@ -360,7 +360,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -446, y: 822.78613}
+  m_AnchoredPosition: {x: -446, y: 822.78674}
   m_SizeDelta: {x: 1064, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &104602354
@@ -482,28 +482,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 478937535}
-  - component: {fileID: 478937534}
+  - component: {fileID: 478937536}
   m_Layer: 0
-  m_Name: LevelListManager
+  m_Name: AssignmentManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &478937534
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 478937533}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3837af1dff7e6fe488f3fe9b6c686d20, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  contenedorLevels: {fileID: 104602353}
-  levelButtonPrefab: {fileID: 2462991926325198377}
 --- !u!4 &478937535
 Transform:
   m_ObjectHideFlags: 0
@@ -519,6 +505,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &478937536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 478937533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6cdf20cce8516f146980005d108b46d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  contenedorLevels: {fileID: 104602353}
+  levelItemPrefab: {fileID: 2462991926325198377}
 --- !u!1 &657826283
 GameObject:
   m_ObjectHideFlags: 0
@@ -1108,8 +1108,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 42599731}
   m_HandleRect: {fileID: 42599729}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0.99483794
+  m_Value: 0
+  m_Size: 0.99999535
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1835,6 +1835,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2188023320320631783, guid: 3ab3b871d06b8a044b7958c9b956a263, type: 3}
+      propertyPath: m_Name
+      value: NombreText
+      objectReference: {fileID: 0}
     - target: {fileID: 3160826365403023005, guid: 3ab3b871d06b8a044b7958c9b956a263, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1916,6 +1920,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5746229868612330749, guid: 3ab3b871d06b8a044b7958c9b956a263, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5746229868612330749, guid: 3ab3b871d06b8a044b7958c9b956a263, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 8053482366908577992, guid: 3ab3b871d06b8a044b7958c9b956a263, type: 3}
@@ -1935,7 +1943,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: LevelBottom
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8053482366908577992, guid: 3ab3b871d06b8a044b7958c9b956a263, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

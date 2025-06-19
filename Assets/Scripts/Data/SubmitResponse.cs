@@ -3,12 +3,12 @@ namespace Data
     [System.Serializable]
     public class SubmitResponse
     {
-        public string questionId;
+        public string question_id;
         public int selectedIndex;
 
         public SubmitResponse(string id, int index)
         {
-            questionId = id;
+            question_id = id;
             selectedIndex = index;
         }
     }

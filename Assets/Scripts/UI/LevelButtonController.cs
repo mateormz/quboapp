@@ -32,6 +32,8 @@ public class LevelButtonController : MonoBehaviour
         Debug.Log($"Valor de isUnlocked: {isUnlocked}");
         Debug.Log($"Nivel actual: {levelNumber}");
 
+        PlayerPrefs.SetInt("modo_asignacion", 0);
+
         if (!isUnlocked)
         {
             Debug.Log("Este botón está bloqueado, no hace nada.");
