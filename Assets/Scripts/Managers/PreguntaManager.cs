@@ -23,7 +23,9 @@ public class PreguntaManager : MonoBehaviour
     private int level;
     private string token;
 
-void Start()
+    private float inicioNivel;
+
+    void Start()
     {
         Time.timeScale = 1f;
         token = PlayerPrefs.GetString("token");
@@ -55,6 +57,8 @@ void Start()
 
             StartCoroutine(CargarPreguntasDesdeGameAPI());
         }
+
+        inicioNivel = Time.time;
     }
 
     IEnumerator CargarPreguntasDesdeGameAPI()
@@ -188,6 +192,11 @@ IEnumerator CargarPreguntasDesdeAssignmentLevel()
         if (panelCargando != null) panelCargando.SetActive(true);
 
         bool esModoAsignacion = PlayerPrefs.GetInt("modo_asignacion", 0) == 1;
+
+        float tiempoFinal = Time.time;
+        float duracion = tiempoFinal - inicioNivel;
+        submitData.level_time = Mathf.RoundToInt(duracion).ToString();
+        
         string json = JsonUtility.ToJson(submitData);
 
         string url;

@@ -6,11 +6,14 @@ using Data;
 
 public class UserDataLoader : MonoBehaviour
 {
-    private string gameId;
+    private readonly List<string> gameIds = new List<string>
+    {
+        ApiConfig.GameIds.Qubo1,
+        ApiConfig.GameIds.Qubo2
+    };
 
     void Start()
     {
-        gameId = PlayerPrefs.GetString("selected_game_id", ApiConfig.GameIds.Qubo1); // fallback por si no hay valor
         StartCoroutine(ObtenerDatosUsuario());
     }
 
@@ -20,7 +23,6 @@ public class UserDataLoader : MonoBehaviour
         string token = PlayerPrefs.GetString("token");
 
         string url = ApiConfig.GetUserData(userId);
-
         UnityWebRequest www = UnityWebRequest.Get(url);
         www.SetRequestHeader("Authorization", token);
 
@@ -33,22 +35,27 @@ public class UserDataLoader : MonoBehaviour
         }
 
         string rawJson = www.downloadHandler.text;
-        int nivelDesbloqueado = 0;
+        Debug.Log("📥 JSON recibido: " + rawJson);
 
-        int start = rawJson.IndexOf(gameId);
-        if (start != -1)
+        foreach (string gameId in gameIds)
         {
-            int colon = rawJson.IndexOf(':', start);
-            int comma = rawJson.IndexOfAny(new[] { ',', '}' }, colon);
-            string levelStr = rawJson.Substring(colon + 1, comma - colon - 1).Trim();
-            int.TryParse(levelStr, out nivelDesbloqueado);
-        }
+            int nivelDesbloqueado = 0;
 
-        PlayerPrefs.SetInt("nivel_desbloqueado_" + gameId, nivelDesbloqueado);
+            int start = rawJson.IndexOf(gameId);
+            if (start != -1)
+            {
+                int colon = rawJson.IndexOf(':', start);
+                int comma = rawJson.IndexOfAny(new[] { ',', '}' }, colon);
+                string levelStr = rawJson.Substring(colon + 1, comma - colon - 1).Trim();
+                int.TryParse(levelStr, out nivelDesbloqueado);
+            }
+
+            Debug.Log($"🔓 Nivel desbloqueado para {gameId}: {nivelDesbloqueado}");
+            PlayerPrefs.SetInt("nivel_desbloqueado_" + gameId, nivelDesbloqueado);
+        }
 
         StartCoroutine(ObtenerCantidadDeNiveles());
     }
-
 
     IEnumerator ObtenerCantidadDeNiveles()
     {
@@ -66,21 +73,18 @@ public class UserDataLoader : MonoBehaviour
             yield break;
         }
 
-        // Mostrar la respuesta del servidor
-        Debug.Log("Respuesta de juegos: " + req.downloadHandler.text);
+        Debug.Log("📦 Respuesta de juegos: " + req.downloadHandler.text);
 
         GameListWrapper wrapper = JsonUtility.FromJson<GameListWrapper>(req.downloadHandler.text);
         foreach (GameData game in wrapper.games)
         {
-            if (game.game_id == gameId)
+            if (gameIds.Contains(game.game_id))
             {
-                Debug.Log($"Juego encontrado: {game.name}, Niveles: {game.level_count}");
-                PlayerPrefs.SetInt("total_levels_" + gameId, game.level_count);
-                break;
+                Debug.Log($"🎮 Juego: {game.name}, Niveles: {game.level_count}");
+                PlayerPrefs.SetInt("total_levels_" + game.game_id, game.level_count);
             }
         }
     }
-
 
     [System.Serializable]
     public class GameListWrapper
