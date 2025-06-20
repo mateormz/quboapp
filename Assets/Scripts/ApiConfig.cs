@@ -9,8 +9,14 @@ public static class ApiConfig
     public static readonly string REGISTER_URL = $"{AUTH_BASE_URL}/auth/register";
     public static readonly string GET_CLASSROOMS = $"{AUTH_BASE_URL}/classrooms/by-teacher";
     public static readonly string CREATE_CLASSROOM = $"{AUTH_BASE_URL}/classrooms/create";
+
+    public static string GetStudentSkins(string userId) => $"{AUTH_BASE_URL}/auth/student/skins/{userId}";
+    public static string UpdateStudentSkin(string userId) => $"{AUTH_BASE_URL}/auth/student/skin/{userId}";
+
+    // Obtener datos de un usuario específico
+
     public static string GET_USER_BY_ID(string userId) => $"{AUTH_BASE_URL}/auth/users/get/{userId}";
-  
+
     public static string GetUserData(string userId) => $"{AUTH_BASE_URL}/auth/users/get/{userId}";
 
     // Skins
@@ -25,7 +31,7 @@ public static class ApiConfig
 
     // Streak
     public static string UPDATE_USER_STREAK(string userId) => $"{AUTH_BASE_URL}/auth/student/streak/{userId}";
-  
+
 
     // === Base del juego ===
     public static readonly string GAME_BASE_URL = "https://cs3veym1u9.execute-api.us-east-1.amazonaws.com/dev";
@@ -51,4 +57,22 @@ public static class ApiConfig
         public static readonly string Qubo1 = "ed7bdef1-74c2-4a1c-a055-d5876b069734";
         public static readonly string Qubo2 = "d8e09986-6c0a-4301-a16a-89f4ae1d00c4";
     }
+
+    // === Base para Feedback ===
+    public static readonly string FEEDBACK_BASE_URL = "https://lxmh3nm7g5.execute-api.us-east-1.amazonaws.com/dev";
+
+    // Endpoint para obtener el feedback
+    // El método POST no debería tener el session_id en la URL, lo manejamos en el body
+    public static string GET_FEEDBACK() => $"{FEEDBACK_BASE_URL}/feedback/generate"; // Eliminamos el ?session_id={sessionId} pero lo pasamos en el body
+
+    // === Assignments ===
+    public static readonly string ASSIGNMENTS_BASE_URL = "https://l77tror5va.execute-api.us-east-1.amazonaws.com/dev";
+
+    public static string GetLevelsFromAssignment(string assignmentId) => $"{ASSIGNMENTS_BASE_URL}/custom-levels/assignment/{assignmentId}";
+
+    public static string GetAssignmentsByClassroom(string classroomId) => $"{ASSIGNMENTS_BASE_URL}/assignments?classroom_id={classroomId}";
+
+    public static string GetQuestionsFromAssignmentLevel(string levelId) => $"{ASSIGNMENTS_BASE_URL}/custom-levels/{levelId}/questions";
+
+    public static string SubmitAssignmentLevel(string levelId) => $"{ASSIGNMENTS_BASE_URL}/custom-levels/{levelId}/submit";
 }

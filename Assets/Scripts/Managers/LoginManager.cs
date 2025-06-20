@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System.Collections.Generic;
 
 public class LoginManager : MonoBehaviour
 {
@@ -62,6 +63,8 @@ public class LoginManager : MonoBehaviour
 
                 // 2. Obtener datos adicionales del usuario
                 yield return StartCoroutine(ObtenerDatosDelUsuario(response.user_id, response.token));
+
+                yield return StartCoroutine(ObtenerAsignacionesDelClassroom());
 
                 SceneManager.LoadScene("Main");
             }
@@ -129,6 +132,8 @@ public class LoginManager : MonoBehaviour
                 PlayerPrefs.SetString("skinsDesbloqueadas", string.Join(",", datos.skinsDesbloqueadas));
                 PlayerPrefs.SetString("nombre", datos.name);
                 PlayerPrefs.SetString("apellido", datos.lastName);
+                PlayerPrefs.SetString("classroom_id", datos.classroom_id);
+                Debug.Log("classroom_id: " + PlayerPrefs.GetString("classroom_id"));
 
                 Debug.Log("✅ Datos del usuario cargados correctamente.");
             }
@@ -138,6 +143,75 @@ public class LoginManager : MonoBehaviour
             }
         }
     }
+
+    IEnumerator ObtenerAsignacionesDelClassroom()
+    {
+        string classroomId = PlayerPrefs.GetString("classroom_id");
+        string token = PlayerPrefs.GetString("token");
+        string url = ApiConfig.GetAssignmentsByClassroom(classroomId);
+
+        Debug.Log($"🛰️ Iniciando solicitud de asignaciones para aula: {classroomId}");
+        Debug.Log($"🔗 URL de consulta: {url}");
+
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            request.SetRequestHeader("Authorization", token);
+            yield return request.SendWebRequest();
+
+            Debug.Log($"📡 Respuesta recibida. Código: {request.responseCode}");
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log("✅ Solicitud exitosa. Cuerpo de respuesta:");
+                Debug.Log(request.downloadHandler.text);
+
+                try
+                {
+                    Debug.Log("📦 JSON a deserializar: " + request.downloadHandler.text);
+
+                    AssignmentListWrapper response = JsonUtility.FromJson<AssignmentListWrapper>(request.downloadHandler.text);
+
+                    if (response != null && response.assignments != null)
+                    {
+                        Debug.Log($"📊 Cantidad de asignaciones encontradas: {response.assignments.Count}");
+
+                        if (response.assignments.Count > 0)
+                        {
+                            Assignment assignment = response.assignments[0];
+                            string assignmentJson = JsonUtility.ToJson(assignment);
+
+                            PlayerPrefs.SetString("assignment_data", assignmentJson);
+                            PlayerPrefs.SetString("assignment_id", assignment.assignment_id);
+                            Debug.Log("assignment_id: " + PlayerPrefs.GetString("assignment_id"));
+
+                            Debug.Log("📥 Asignación guardada correctamente:");
+                            Debug.Log(assignmentJson);
+                        }
+                        else
+                        {
+                            Debug.LogWarning("⚠️ No se encontraron asignaciones para este aula.");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError("❌ La deserialización devolvió un objeto nulo o sin lista.");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError("❌ Excepción al parsear las asignaciones: " + ex.Message);
+                }
+            }
+            else
+            {
+                Debug.LogError("❌ Error HTTP al obtener asignaciones:");
+                Debug.LogError("Código: " + request.responseCode);
+                Debug.LogError("Mensaje: " + request.error);
+                Debug.LogError("Respuesta: " + request.downloadHandler.text);
+            }
+        }
+    }
+
 
     [System.Serializable]
     public class LoginRequestPost
@@ -180,4 +254,21 @@ public class LoginManager : MonoBehaviour
         public int streak;
         public string last_login_date;
     }
+
+    [System.Serializable]
+    public class Assignment
+    {
+        public string assignment_id;
+        public string classroom_id;
+        public string teacher_id;
+        public string game_name;
+        public string[] level_ids;
+    }
+
+    [System.Serializable]
+    public class AssignmentListWrapper
+    {
+        public List<Assignment> assignments;
+    }
+
 }

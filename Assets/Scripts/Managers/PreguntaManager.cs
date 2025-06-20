@@ -23,33 +23,41 @@ public class PreguntaManager : MonoBehaviour
     private int level;
     private string token;
 
-    void Start()
+void Start()
     {
         Time.timeScale = 1f;
-
         token = PlayerPrefs.GetString("token");
-        level = PlayerPrefs.GetInt("nivel_seleccionado", 1);
-        if (!PlayerPrefs.HasKey("selected_game_id"))
-        {
-            Debug.LogWarning("⚠️ No hay gameId seleccionado. Regresando a selección de juegos.");
-            SceneManager.LoadScene("Games"); // o la escena que quieras
-            return;
-        }
 
-        gameId = PlayerPrefs.GetString("selected_game_id"); 
-
-        Debug.Log("🔢 Nivel seleccionado para jugar: " + level);
-        Debug.Log("🎮 Game ID: " + gameId);
+        bool esModoAsignacion = PlayerPrefs.GetInt("modo_asignacion", 0) == 1;
 
         if (panelCargando != null)
             panelCargando.SetActive(true);
 
-        StartCoroutine(CargarPreguntasDesdeAPI());
+        if (esModoAsignacion)
+        {
+            Debug.Log("📘 Modo asignación detectado");
+            StartCoroutine(CargarPreguntasDesdeAssignmentLevel());
+        }
+        else
+        {
+            level = PlayerPrefs.GetInt("nivel_seleccionado", 1);
+
+            if (!PlayerPrefs.HasKey("selected_game_id"))
+            {
+                Debug.LogWarning("⚠️ No hay gameId seleccionado. Regresando a selección de juegos.");
+                SceneManager.LoadScene("Games");
+                return;
+            }
+
+            gameId = PlayerPrefs.GetString("selected_game_id");
+            Debug.Log("🔢 Nivel seleccionado: " + level);
+            Debug.Log("🎮 Game ID: " + gameId);
+
+            StartCoroutine(CargarPreguntasDesdeGameAPI());
+        }
     }
 
-
-
-    IEnumerator CargarPreguntasDesdeAPI()
+    IEnumerator CargarPreguntasDesdeGameAPI()
     {
         string levelUrl = ApiConfig.GetLevel(gameId, level);
         UnityWebRequest www = UnityWebRequest.Get(levelUrl);
@@ -84,6 +92,41 @@ public class PreguntaManager : MonoBehaviour
         }
 
         preguntas = preguntasCompletas.ToArray();
+        indiceActual = 0;
+        if (panelCargando != null) panelCargando.SetActive(false);
+        MostrarPreguntaActual();
+    }
+
+IEnumerator CargarPreguntasDesdeAssignmentLevel()
+    {
+        string levelId = PlayerPrefs.GetString("selected_assignment_level_id", "");
+        if (string.IsNullOrEmpty(levelId))
+        {
+            Debug.LogError("❌ No se encontró el level_id para la asignación.");
+            yield break;
+        }
+
+        string url = ApiConfig.GetQuestionsFromAssignmentLevel(levelId);
+        Debug.Log("🔗 Consultando preguntas del nivel de asignación: " + url);
+
+        UnityWebRequest req = UnityWebRequest.Get(url);
+        req.SetRequestHeader("Authorization", token);
+        yield return req.SendWebRequest();
+
+        if (req.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError("❌ Error al obtener preguntas del nivel de asignación: " + req.downloadHandler.text);
+            yield break;
+        }
+
+        AssignmentLevelQuestionResponse data = JsonUtility.FromJson<AssignmentLevelQuestionResponse>(req.downloadHandler.text);
+        if (data == null || data.questions == null || data.questions.Count == 0)
+        {
+            Debug.LogWarning("⚠️ No se encontraron preguntas en el nivel de asignación.");
+            yield break;
+        }
+
+        preguntas = data.questions.ToArray();
         indiceActual = 0;
         if (panelCargando != null) panelCargando.SetActive(false);
         MostrarPreguntaActual();
@@ -144,8 +187,21 @@ public class PreguntaManager : MonoBehaviour
     {
         if (panelCargando != null) panelCargando.SetActive(true);
 
-        string url = ApiConfig.SubmitLevel(gameId, level);
+        bool esModoAsignacion = PlayerPrefs.GetInt("modo_asignacion", 0) == 1;
         string json = JsonUtility.ToJson(submitData);
+
+        string url;
+        if (esModoAsignacion)
+        {
+            string levelId = PlayerPrefs.GetString("selected_assignment_level_id", "");
+            url = ApiConfig.SubmitAssignmentLevel(levelId);
+            Debug.Log("📤 Enviando respuestas al endpoint de asignaciones: " + url);
+        }
+        else
+        {
+            url = ApiConfig.SubmitLevel(gameId, level);
+            Debug.Log("📤 Enviando respuestas al endpoint de juegos: " + url);
+        }
 
         UnityWebRequest req = new UnityWebRequest(url, "POST");
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
@@ -178,6 +234,11 @@ public class PreguntaManager : MonoBehaviour
             else
             {
                 Debug.Log("🚫 Nivel no aprobado.");
+
+                PlayerPrefs.SetString("feedback_session_id", resultado.sessionId);
+                PlayerPrefs.Save();
+                Debug.Log("🧠 SessionId guardado para feedback: " + resultado.sessionId);
+
                 Perder();
             }
         }
@@ -192,6 +253,13 @@ public class PreguntaManager : MonoBehaviour
     public void VolverAlMenu()
     {
         Time.timeScale = 1f;
+        PlayerPrefs.SetInt("modo_asignacion", 0);
         SceneManager.LoadScene("Main");
     }
+}
+
+[System.Serializable]
+public class AssignmentLevelQuestionResponse
+{
+    public List<PreguntaData> questions;
 }
