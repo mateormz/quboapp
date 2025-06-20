@@ -196,6 +196,8 @@ IEnumerator CargarPreguntasDesdeAssignmentLevel()
         float tiempoFinal = Time.time;
         float duracion = tiempoFinal - inicioNivel;
         submitData.level_time = Mathf.RoundToInt(duracion).ToString();
+
+        Debug.Log($"⏱ Duración del nivel: {submitData.level_time} segundos");
         
         string json = JsonUtility.ToJson(submitData);
 
