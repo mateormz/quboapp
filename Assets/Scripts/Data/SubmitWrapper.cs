@@ -6,6 +6,7 @@ namespace Data
     public class SubmitWrapper
     {
         public List<SubmitResponse> responses;
+        public string level_time;
 
         public SubmitWrapper()
         {

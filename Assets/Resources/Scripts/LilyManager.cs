@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -19,44 +20,50 @@ public class Problema
 
 public class LilyManager : MonoBehaviour
 {
+    // Prefabs
     public GameObject prefabLily;
     public GameObject prefabAgua;
     public GameObject prefabCesped;
     public GameObject playerPrefab;
 
+    // UI
     public GameObject panelPregunta;
     public GameObject panelFinish;
     public TextMeshProUGUI textoFinal;
     public TextMeshProUGUI textoEnunciado;
+    [SerializeField] private GameObject mensajeIncorrectoUI;
+
+    // Gameplay
     public int filasCount = 5;
     public float espacioVertical = 5f;
-
     private List<Problema> problemasDisponibles = new List<Problema>();
     private List<List<Lily>> filasLily = new List<List<Lily>>();
     private int filaActual = 0;
     private int generatedRowsCount = 0;
-    [SerializeField] private GameObject mensajeIncorrectoUI;
-
-    private PlayerMovement playerMovement;
-    private AudioSource audioSource;
     private Vector3 grassEndPos;
 
-    public AudioClip musicaVictoria;
+    // Lógica
+    private PlayerMovement playerMovement;
+    private AudioSource audioSource;
 
-    // Datos para el submit
+    // Datos de envío
     private SubmitWrapper submitData = new SubmitWrapper();
     private string gameId;
     private int level;
     private string token;
+    private float inicioNivel;
 
     void Start()
     {
+        Time.timeScale = 1f;
         panelFinish.SetActive(false);
         panelPregunta.SetActive(true);
 
         token = PlayerPrefs.GetString("token");
         level = PlayerPrefs.GetInt("nivel_seleccionado", 1);
         gameId = PlayerPrefs.GetString("selected_game_id");
+
+        inicioNivel = Time.time;
 
         StartCoroutine(CargarPreguntasDesdeAPI());
         audioSource = gameObject.AddComponent<AudioSource>();
@@ -89,30 +96,18 @@ public class LilyManager : MonoBehaviour
             if (qRequest.result == UnityWebRequest.Result.Success)
             {
                 PreguntaData p = JsonUtility.FromJson<PreguntaData>(qRequest.downloadHandler.text);
+                string respuestaCorrecta = p.options[p.correctIndex];
+                List<string> primerasTres = p.options.Take(3).ToList();
 
-                // Guardamos el original questionId y las opciones
-                string originalQuestionId = p.question_id;
-                List<string> opcionesOriginales = new List<string>(p.options);
-                string respuestaCorrecta = opcionesOriginales[p.correctIndex];
+                if (!primerasTres.Contains(respuestaCorrecta)) continue;
 
-                // Limitar a 3 opciones
-                List<string> primerasTres = opcionesOriginales.Take(3).ToList();
-                if (!primerasTres.Contains(respuestaCorrecta))
-                {
-                    Debug.LogWarning($"❌ Pregunta descartada: respuesta correcta '{respuestaCorrecta}' no está en las 3 primeras.");
-                    continue;
-                }
-
-                // Crear el problema sin el shuffle
-                Problema nuevo = new Problema
+                preguntasCompletas.Add(new Problema
                 {
                     enunciado = p.text,
                     valoresNenufares = primerasTres.ToArray(),
-                    correctIndex = p.correctIndex, // Mantener el correctIndex original
-                    questionId = originalQuestionId // Guardar el original questionId
-                };
-
-                preguntasCompletas.Add(nuevo);
+                    correctIndex = p.correctIndex,
+                    questionId = p.question_id
+                });
             }
         }
 
@@ -235,7 +230,6 @@ public class LilyManager : MonoBehaviour
             bool esCorrecto = (i == problema.correctIndex);
             fila[i].SetValor(problema.valoresNenufares[i]);
             fila[i].esCorrecto = esCorrecto;
-            Debug.Log($"🌱 Nenúfar {i}: {problema.valoresNenufares[i]} - esCorrecto: {esCorrecto}");
         }
     }
 
@@ -247,8 +241,6 @@ public class LilyManager : MonoBehaviour
         foreach (var l in filasLily[filaActual])
             l.GetComponent<Collider2D>().enabled = false;
 
-        Debug.Log($"👆 Click en nenúfar con texto: {lily.textoValor.text}, esCorrecto: {lily.esCorrecto}");
-
         playerMovement.MoveTo(lily.transform.position, () =>
         {
             StartCoroutine(ProcesarRespuesta(lily));
@@ -257,41 +249,29 @@ public class LilyManager : MonoBehaviour
 
     IEnumerator ProcesarRespuesta(Lily lily)
     {
-        var current = filasLily[filaActual];
-
-        // Guardar la respuesta seleccionada
         var pregunta = problemasDisponibles[filaActual];
-        // Añadimos el SubmitResponse con el ID de la pregunta original y el índice de la respuesta seleccionada
-        submitData.responses.Add(new SubmitResponse(pregunta.questionId, Array.IndexOf(pregunta.valoresNenufares, lily.textoValor.text)));
+        int indexSeleccionado = Array.IndexOf(pregunta.valoresNenufares, lily.textoValor.text);
+        submitData.responses.Add(new SubmitResponse(pregunta.questionId, indexSeleccionado));
 
         if (!lily.esCorrecto)
         {
-            Debug.Log("❌ Nenúfar incorrecto: se eliminan los otros.");
             CurrencyManager.Instance.SumarMonedas(1);
-
-            // Mostrar mensaje
             mensajeIncorrectoUI.SetActive(true);
             yield return new WaitForSeconds(1f);
             mensajeIncorrectoUI.SetActive(false);
         }
         else
         {
-            Debug.Log("✅ Nenúfar correcto: se destruyen los demás.");
             CurrencyManager.Instance.SumarMonedas(5);
         }
 
-        foreach (var l in current)
-            if (l != lily)
-                Destroy(l.gameObject);
-
+        var current = filasLily[filaActual];
+        foreach (var l in current) if (l != lily) Destroy(l.gameObject);
         filasLily[filaActual] = new List<Lily> { lily };
 
-        bool wasLast = filaActual == filasLily.Count - 1;
         filaActual++;
-
-        if (wasLast)
+        if (filaActual >= filasLily.Count)
         {
-            // Enviar todas las respuestas al final
             StartCoroutine(FinalizarJuego());
         }
         else
@@ -303,8 +283,13 @@ public class LilyManager : MonoBehaviour
 
     IEnumerator FinalizarJuego()
     {
-        string url = ApiConfig.SubmitLevel(gameId, level);
+        float tiempoFinal = Time.time;
+        float duracion = tiempoFinal - inicioNivel;
+        submitData.level_time = Mathf.RoundToInt(duracion).ToString();
+        Debug.Log($"⏱ Duración del nivel: {submitData.level_time} segundos");
+
         string json = JsonUtility.ToJson(submitData);
+        string url = ApiConfig.SubmitLevel(gameId, level);
 
         UnityWebRequest req = new UnityWebRequest(url, "POST");
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
@@ -334,13 +319,16 @@ public class LilyManager : MonoBehaviour
             else
             {
                 Debug.Log("🚫 Nivel no aprobado.");
+                PlayerPrefs.SetString("feedback_session_id", resultado.sessionId);
+                PlayerPrefs.Save();
+                Debug.Log("🧠 SessionId guardado para feedback: " + resultado.sessionId);
                 Perder();
             }
         }
     }
 
     void Ganar()
-    {   
+    {
         panelPregunta.SetActive(false);
         textoFinal.text = "GANASTE!";
         panelFinish.SetActive(true);
@@ -348,6 +336,7 @@ public class LilyManager : MonoBehaviour
 
     void Perder()
     {
+        Time.timeScale = 0f;
         panelPregunta.SetActive(false);
         textoFinal.text = "PERDISTE!";
         panelFinish.SetActive(true);
@@ -358,5 +347,4 @@ public class LilyManager : MonoBehaviour
         Time.timeScale = 1f;
         SceneManager.LoadScene("Main");
     }
-
 }
