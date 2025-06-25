@@ -229,8 +229,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 12, y: -959}
-  m_SizeDelta: {x: 200, y: 200}
+  m_AnchoredPosition: {x: -9, y: -639}
+  m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &81469336
 MonoBehaviour:
@@ -360,7 +360,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -446, y: 764.1714}
+  m_AnchoredPosition: {x: -446, y: 369.41568}
   m_SizeDelta: {x: 1064, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &104602354
@@ -504,7 +504,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   contenedorLevels: {fileID: 104602353}
   levelButtonPrefab: {fileID: 2462991926325198377}
-  gameId: a3d59a39-c738-450f-8f56-af0bd0ef4302
 --- !u!4 &478937535
 Transform:
   m_ObjectHideFlags: 0
@@ -1110,7 +1109,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 42599729}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.99999785
+  m_Size: 0.9996578
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1284,7 +1283,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 25, y: 752}
+  m_AnchoredPosition: {x: -0.0000019073, y: 562}
   m_SizeDelta: {x: 1000, y: 258.2797}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1381282567
@@ -1740,8 +1739,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -137.32874}
-  m_SizeDelta: {x: 0, y: -674.6572}
+  m_AnchoredPosition: {x: 0, y: -102.95715}
+  m_SizeDelta: {x: 0, y: -684.8727}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1986469065
 GameObject:
